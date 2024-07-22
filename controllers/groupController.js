@@ -2,6 +2,7 @@
 import mongoose from "mongoose";
 import Group from "../models/Group.js";
 import Profile from "../models/Profile.js";
+import Contact from "../models/contact.js";
 
 // Get all groups
 export const getGroups = async (req, res) => {
@@ -131,6 +132,62 @@ export const deleteGroup = async (req, res) => {
   } catch (err) {
     await session.abortTransaction();
     session.endSession();
+    console.error(err);
+    res.status(500).send("Server error");
+  }
+};
+
+// Add contact to group
+export const addContactToGroup = async (req, res) => {
+  const { groupId, contactId } = req.body;
+  const { userId } = req;
+
+  try {
+    const group = await Group.findOne({ _id: groupId, userId });
+    if (!group) {
+      return res.status(404).json({ msg: "Group not found" });
+    }
+
+    const contact = await Contact.findOne({ _id: contactId });
+    if (!contact) {
+      return res.status(404).json({ msg: "Contact not found" });
+    }
+
+    if (group.contacts.includes(contact._id)) {
+      return res.status(400).json({ msg: "Contact already in group" });
+    }
+
+    group.contacts.push(contact._id);
+    await group.save();
+
+    res.status(200).json({ msg: "Contact added to group" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server error");
+  }
+};
+
+// Remove contact from group
+export const removeContactFromGroup = async (req, res) => {
+  const { groupId, contactId } = req.body;
+  const { userId } = req;
+
+  try {
+    const group = await Group.findOne({ _id: groupId, userId });
+    if (!group) {
+      return res.status(404).json({ msg: "Group not found" });
+    }
+
+    const contactIndex = group.contacts.indexOf(contactId);
+    if (contactIndex === -1) {
+      return res.status(404).json({ msg: "Contact not found in group" });
+    }
+
+    group.contacts.splice(contactIndex, 1);
+    await group.save();
+
+    res.status(200).json({ msg: "Contact removed from group" });
+  } catch (err) {
     console.error(err);
     res.status(500).send("Server error");
   }
