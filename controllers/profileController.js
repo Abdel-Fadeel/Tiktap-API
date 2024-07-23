@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Profile from "../models/Profile.js";
 import User from "../models/User.js";
+import { validateURL } from "../utils/urlValidationUtils.js";
 // import { deleteImage, uploadImage } from "../utils/uploadImgUtils.js";
 
 export const getProfiles = async (req, res) => {
@@ -136,6 +137,99 @@ export const deleteProfile = async (req, res) => {
   } catch (err) {
     await session.abortTransaction();
     session.endSession();
+    console.error(err);
+    res.status(500).send("Server error");
+  }
+};
+
+// Add Link to Profile
+export const addLink = async (req, res) => {
+  const { type, url, profileId } = req.body;
+  const { userId } = req;
+
+  if (!validateURL(type, url)) {
+    return res.status(400).json({ msg: `Invalid ${type} URL` });
+  }
+
+  try {
+    const profile = await Profile.findOne({
+      userId,
+      _id: profileId,
+    });
+
+    if (!profile) {
+      return res.status(404).json({ msg: "Profile not found" });
+    }
+
+    profile.links.push({ type, url });
+
+    await profile.save();
+
+    res.status(200).json(profile);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server error");
+  }
+};
+
+// Update Link in Profile
+export const updateLink = async (req, res) => {
+  const { type, url, profileId } = req.body;
+  const { userId } = req;
+  const { linkId } = req.params;
+
+  if (!validateURL(type, url)) {
+    return res.status(400).json({ msg: `Invalid ${type} URL` });
+  }
+
+  try {
+    const profile = await Profile.findOne({ userId, _id: profileId });
+    if (!profile) {
+      return res.status(404).json({ msg: "Profile not found" });
+    }
+
+    const link = profile.links.id(linkId);
+    if (!link) {
+      return res.status(404).json({ msg: "Link not found" });
+    }
+
+    link.type = type;
+    link.url = url;
+
+    await profile.save();
+
+    res.status(200).json(profile);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server error");
+  }
+};
+
+// Delete Link in Profile
+export const deleteLink = async (req, res) => {
+  const { profileId } = req.body;
+  const { userId } = req;
+  const { linkId } = req.params;
+
+  try {
+    const profile = await Profile.findOne({ userId, _id: profileId });
+    if (!profile) {
+      return res.status(404).json({ msg: "Profile not found" });
+    }
+
+    const linkIndex = profile.links.findIndex(
+      (link) => link._id.toString() === linkId
+    );
+    if (linkIndex === -1) {
+      return res.status(404).json({ msg: "Link not found" });
+    }
+
+    profile.links.splice(linkIndex, 1);
+
+    await profile.save();
+
+    res.status(200).json({ msg: "Link deleted" });
+  } catch (err) {
     console.error(err);
     res.status(500).send("Server error");
   }
