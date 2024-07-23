@@ -211,6 +211,9 @@ export const deleteLink = async (req, res) => {
   const { userId } = req;
   const { linkId } = req.params;
 
+  console.log(userId);
+  console.log(profileId);
+
   try {
     const profile = await Profile.findOne({ userId, _id: profileId });
     if (!profile) {

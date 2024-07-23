@@ -1,7 +1,6 @@
 import { Strategy as LocalStrategy } from "passport-local";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Strategy as FacebookStrategy } from "passport-facebook";
-import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 
 export default function (passport) {
@@ -18,7 +17,7 @@ export default function (passport) {
             });
           }
 
-          const isMatch = await bcrypt.compare(password, user.password);
+          const isMatch = await user.matchPassword(password);
           if (isMatch) {
             return done(null, user);
           } else {

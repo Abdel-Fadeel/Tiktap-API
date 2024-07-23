@@ -2,6 +2,7 @@
 import mongoose from "mongoose";
 import Contact from "../models/contact.js";
 import Profile from "../models/Profile.js";
+import Group from "../models/Group.js";
 
 // Get all contacts
 export const getContacts = async (req, res) => {
@@ -34,8 +35,7 @@ export const getContactById = async (req, res) => {
 
 // Create a new contact
 export const createContact = async (req, res) => {
-  const { fullName, phoneNumber, note, email, title, profileId, groupId } =
-    req.body;
+  const { fullName, phoneNumber, note, email, title, profileId } = req.body;
   const { userId } = req;
   const session = await mongoose.startSession();
 
@@ -48,7 +48,6 @@ export const createContact = async (req, res) => {
       note,
       email,
       title,
-      groupId,
       profileId,
       userId,
     });
@@ -79,9 +78,9 @@ export const createContact = async (req, res) => {
 
 // Update a contact
 export const updateContact = async (req, res) => {
-  const { fullName, phoneNumber, note, email, title, groupId } = req.body;
+  const { fullName, phoneNumber, note, email, title } = req.body;
   const { userId } = req;
-  const updates = { fullName, phoneNumber, note, email, title, groupId };
+  const updates = { fullName, phoneNumber, note, email, title };
   try {
     const contact = await Contact.findOneAndUpdate(
       { _id: req.params.id, userId },

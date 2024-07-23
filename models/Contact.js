@@ -19,11 +19,6 @@ const ContactSchema = new mongoose.Schema({
   note: {
     type: String,
   },
-  groupId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Group",
-    default: null,
-  },
   profileId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Profile",

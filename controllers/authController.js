@@ -1,7 +1,6 @@
 import bcrypt from "bcryptjs";
 import passport from "passport";
 import crypto from "crypto";
-import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import { Resend } from "resend";
 import { generateToken } from "../utils/jwtUtils.js";
@@ -28,9 +27,6 @@ export const postRegister = async (req, res) => {
     }
 
     user = new User({ email, password });
-
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(password, salt);
 
     await user.save();
     res.status(201).json({ msg: "You are now registered and can log in" });
