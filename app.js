@@ -60,6 +60,6 @@ app.use("/api/v1/profiles", authMiddleware, profileRoutes);
 app.use("/api/v1/groups", authMiddleware, groupRoutes);
 app.use("/api/v1/contacts", authMiddleware, contactRoutes);
 
-const PORT = process.env.PORT || 3100;
+const PORT = process.env.PORT || 5100;
 
 app.listen(PORT, console.log(`Server started on port ${PORT}`));

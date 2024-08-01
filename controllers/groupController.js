@@ -2,7 +2,7 @@
 import mongoose from "mongoose";
 import Group from "../models/Group.js";
 import Profile from "../models/Profile.js";
-import Contact from "../models/contact.js";
+import Contact from "../models/Contact.js";
 
 // Get all groups
 export const getGroups = async (req, res) => {

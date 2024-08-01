@@ -1,6 +1,6 @@
 // controllers/contactController.js
 import mongoose from "mongoose";
-import Contact from "../models/contact.js";
+import Contact from "../models/Contact.js";
 import Profile from "../models/Profile.js";
 import Group from "../models/Group.js";
 
