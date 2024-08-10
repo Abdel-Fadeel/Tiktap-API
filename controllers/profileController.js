@@ -2,15 +2,15 @@ import mongoose from "mongoose";
 import Profile from "../models/Profile.js";
 import User from "../models/User.js";
 import { validateURL } from "../utils/urlValidationUtils.js";
+import { NotFoundError } from "../errors/customErrors.js";
+import { StatusCodes } from "http-status-codes";
 // import { deleteImage, uploadImage } from "../utils/uploadImgUtils.js";
 
 export const getProfiles = async (req, res) => {
-  try {
-    const profiles = await Profile.find().populate("groups contacts");
-    res.status(200).json(profiles);
-  } catch (err) {
-    res.status(500).send("Server error");
-  }
+  const profiles = await Profile.find({ userId: req.userId }).populate(
+    "groups contacts"
+  );
+  res.status(200).json(profiles);
 };
 
 export const getProfileById = async (req, res) => {
@@ -51,7 +51,7 @@ export const createProfile = async (req, res) => {
     if (!user) {
       await session.abortTransaction();
       session.endSession();
-      return res.status(404).json({ msg: "User not found" });
+      throw new NotFoundError("User not found");
     }
 
     user.profiles.push(profile._id);
@@ -60,12 +60,11 @@ export const createProfile = async (req, res) => {
     await session.commitTransaction();
     session.endSession();
 
-    res.status(201).json(profile);
+    res.status(StatusCodes.CREATED).json({ status: true, data: profile });
   } catch (err) {
     await session.abortTransaction();
     session.endSession();
-    console.error(err);
-    res.status(500).send("Server error");
+    throw err;
   }
 };
 
@@ -95,7 +94,7 @@ export const updateProfile = async (req, res) => {
     Object.assign(profile, updates);
     await profile.save();
 
-    res.status(200).json(profile);
+    res.status(StatusCodes.OK).json({ status: true, data: profile });
   } catch (err) {
     res.status(500).send("Server error");
   }

@@ -23,7 +23,7 @@ const apiLimiter = rateLimiter({
 const router = express.Router();
 
 // Register
-router.post("/register", apiLimiter, validateUserInput, postRegister);
+router.post("/register", apiLimiter, postRegister);
 
 // Login
 router.post("/login", apiLimiter, postLogin);

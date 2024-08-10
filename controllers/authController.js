@@ -31,9 +31,11 @@ export const postLogin = (req, res, next) => {
       };
       res.status(200).json({
         status: true,
-        message: "Login successful",
-        token,
-        user: loggedInUser,
+        message: "Logged in successfully",
+        data: {
+          token,
+          user: loggedInUser,
+        },
       });
     });
   })(req, res, next);
