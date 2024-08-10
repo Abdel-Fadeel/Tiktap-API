@@ -1,4 +1,5 @@
 import express from "express";
+import rateLimiter from "express-rate-limit";
 import passport from "passport";
 import {
   postRegister,
@@ -10,14 +11,22 @@ import {
   getResetPassword,
   postResetPassword,
 } from "../controllers/authController.js";
+import { validateUserInput } from "../middlewares/validation.js";
+
+// Rate Limiter
+const apiLimiter = rateLimiter({
+  windowMs: 1000 * 60 * 15,
+  max: 15,
+  message: { message: "IP rate limit exceeded, try again in 15 minutes" },
+});
 
 const router = express.Router();
 
 // Register
-router.post("/register", postRegister);
+router.post("/register", apiLimiter, validateUserInput, postRegister);
 
 // Login
-router.post("/login", postLogin);
+router.post("/login", apiLimiter, postLogin);
 
 // Logout
 router.get("/logout", getLogout);

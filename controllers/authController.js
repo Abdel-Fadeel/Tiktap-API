@@ -4,42 +4,23 @@ import crypto from "crypto";
 import User from "../models/User.js";
 import { Resend } from "resend";
 import { generateToken } from "../utils/jwtUtils.js";
+import { StatusCodes } from "http-status-codes";
 
 // const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const postRegister = async (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ msg: "Please enter all fields" });
-  }
-
-  if (password.length < 6) {
-    return res
-      .status(400)
-      .json({ msg: "Password must be at least 6 characters" });
-  }
-
-  try {
-    let user = await User.findOne({ email });
-    if (user) {
-      return res.status(400).json({ msg: "Email already exists" });
-    }
-
-    user = new User({ email, password });
-
-    await user.save();
-    res.status(201).json({ msg: "You are now registered and can log in" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Server error");
-  }
+  await User.create(req.body);
+  res.status(StatusCodes.CREATED).json({
+    status: true,
+    message: "You are now registered and can login",
+  });
 };
 
 export const postLogin = (req, res, next) => {
   passport.authenticate("local", (err, user, info) => {
     if (err) throw err;
-    if (!user) return res.status(400).json({ msg: info.message });
+    if (!user)
+      return res.status(400).json({ status: false, message: info.message });
     req.logIn(user, (err) => {
       if (err) throw err;
       const token = generateToken(user._id, user.email);
@@ -48,17 +29,22 @@ export const postLogin = (req, res, next) => {
         email: user.email,
         profiles: user.profiles,
       };
-      res
-        .status(200)
-        .json({ msg: "Login successful", token, user: loggedInUser });
+      res.status(200).json({
+        status: true,
+        message: "Login successful",
+        token,
+        user: loggedInUser,
+      });
     });
   })(req, res, next);
 };
 
-export const getLogout = (req, res) => {
-  req.logout((err) => {
-    if (err) return next(err);
-    res.status(200).json({ msg: "Logout successful" });
+export const getLogout = (req, res, next) => {
+  req.logout(function (err) {
+    if (err) {
+      return next(err);
+    }
+    res.status(200).json({ status: true, message: "Logout successful" });
   });
 };
 
