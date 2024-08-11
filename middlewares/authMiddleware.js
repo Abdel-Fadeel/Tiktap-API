@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import decodeToken from "../utils/jwtUtils.js"
+import { decodeToken } from "../utils/jwtUtils.js"
 const authMiddleware = async (req, res, next) => {
   let token;
   if (
