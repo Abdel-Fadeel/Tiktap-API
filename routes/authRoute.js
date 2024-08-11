@@ -26,7 +26,7 @@ const router = express.Router();
 router.post("/register", apiLimiter, postRegister);
 
 // Login
-router.post("/login", apiLimiter, validateLoginInput, postLogin);
+router.post("/login", apiLimiter, postLogin);
 
 // Logout
 router.get("/logout", getLogout);
