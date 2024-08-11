@@ -9,7 +9,8 @@ import { StatusCodes } from "http-status-codes";
 // const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const postRegister = async (req, res) => {
-  await User.create(req.body);
+  const { username,password } = req.body;
+  await User.create({username, password});
   res.status(StatusCodes.CREATED).json({
     status: true,
     message: "You are now registered and can login",
