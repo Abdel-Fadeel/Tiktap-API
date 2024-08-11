@@ -11,7 +11,7 @@ import {
   getResetPassword,
   postResetPassword,
 } from "../controllers/authController.js";
-import { validateUserInput } from "../middlewares/validation.js";
+import { validateUserInput, validateLoginInput } from "../middlewares/validation.js";
 
 // Rate Limiter
 const apiLimiter = rateLimiter({
