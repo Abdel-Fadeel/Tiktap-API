@@ -11,7 +11,7 @@ import {
   getResetPassword,
   postResetPassword,
 } from "../controllers/authController.js";
-import { validateUserInput, validateLoginInput } from "../middlewares/validation.js";
+import { validateUserInput } from "../middlewares/validation.js";
 
 // Rate Limiter
 const apiLimiter = rateLimiter({
@@ -26,7 +26,7 @@ const router = express.Router();
 router.post("/register", apiLimiter, postRegister);
 
 // Login
-router.post("/login", apiLimiter, validateLoginInput, postLogin);
+router.post("/login", apiLimiter, postLogin);
 
 // Logout
 router.get("/logout", getLogout);
