@@ -10,9 +10,7 @@ import { StatusCodes } from "http-status-codes";
 
 export const postRegister = async (req, res) => {
   const { email,password } = req.body;
-  if (!email || !password) {
-  return res.status(400).json({ message: 'Email and password are required.' });
-}
+
   await User.create({email, password});
   res.status(StatusCodes.CREATED).json({
     status: true,
