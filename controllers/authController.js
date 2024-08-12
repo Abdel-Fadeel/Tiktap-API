@@ -51,7 +51,11 @@ export const getLogout = (req, res, next) => {
 };
 
 export const googleCallback = (req, res) => {
-  res.redirect("/dashboard");
+  // Extract the token and user info from req.user (set by Passport.js)
+  const { token, user } = req.user;
+
+  // Redirect to frontend with token in query params
+  res.redirect(`http://localhost:5173/?token=${token}`);
 };
 
 export const facebookCallback = (req, res) => {

@@ -9,7 +9,13 @@ const UserSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
+    // Only required for non-OAuth users
+    required: function () {
+      return !this.googleId;
+    },
+  },
+  googleId: {
+    type: String,
   },
   profiles: [
     {

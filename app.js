@@ -4,9 +4,9 @@ import mongoose from "mongoose";
 import session from "express-session";
 import passport from "passport";
 import dotenv from "dotenv";
-import flash from "connect-flash";
 import helmet from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
+import cors from "cors";
 import authRoutes from "./routes/authRoute.js";
 import userRoutes from "./routes/usersRoute.js";
 import profileRoutes from "./routes/profilesRoute.js";
@@ -30,13 +30,32 @@ app.use(mongoSanitize());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Passport Config
-initializePassport(passport);
+// Enable CORS
+app.use(
+  cors({
+    origin: ["http://localhost:5173"], // Allow requests from this origin
+    credentials: true, // Allow credentials (cookies, sessions, etc.)
+  })
+);
 
 // Express session
 app.use(
-  session({ secret: "your secret", resave: false, saveUninitialized: true })
+  session({
+    secret: process.env.SESSION_SECRET || "your secret",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
+    },
+  })
 );
+
+// Passport Config
+initializePassport(passport);
+
+// Initialize Passport and session
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -46,10 +65,6 @@ app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/profiles", authMiddleware, profileRoutes);
 app.use("/api/v1/groups", authMiddleware, groupRoutes);
 app.use("/api/v1/contacts", authMiddleware, contactRoutes);
-
-// Passport middleware
-app.use(passport.initialize());
-app.use(passport.session());
 
 // NOT FOUND Handler
 app.use("*", (req, res, next) => {
