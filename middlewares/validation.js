@@ -88,12 +88,16 @@ export const validateLoginInput = withValidationErrors([
   body("email")
     .notEmpty()
     .withMessage("Email is required.")
+    .isString()
+    .withMessage("Email must be a string.")
     .isEmail()
     .withMessage("Invalid email format.")
     .trim(),
   body("password")
     .notEmpty()
     .withMessage("Password is required.")
+    .isString()
+    .withMessage("Passowrd must be a string.")
     .isLength({ min: 8 })
     .withMessage("Password must be at least 8 characters long.")
     .trim(),

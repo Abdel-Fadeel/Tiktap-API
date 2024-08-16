@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-
+import { decodeToken } from "../utils/jwtUtils.js"
 const authMiddleware = async (req, res, next) => {
   let token;
   if (
@@ -13,7 +13,7 @@ const authMiddleware = async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = decodeToken(token);
     req.userId = decoded.userId;
     req.email = decoded.email;
 
