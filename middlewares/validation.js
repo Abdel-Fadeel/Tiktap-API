@@ -20,23 +20,6 @@ const withValidationErrors = (validateValues) => {
   ];
 };
 
-// // Validate ID Parameter
-// export const validateIdParam = withValidationErrors([
-//   param("id").custom(async (value, { req }) => {
-//     const isValidId = mongoose.Types.ObjectId.isValid(value);
-//     if (!isValidId) throw new BadRequestError("Invalid MongoDB id.");
-
-//     const job = await Job.findById(value);
-//     if (!job) throw new NotFoundError("No job found with this id.");
-
-//     const isAdmin = req.user.role === "admin";
-//     const isOwner = req.user.id === job.createdBy?.toString();
-
-//     if (!isAdmin && !isOwner)
-//       throw new UnauthorizedError("Not authorized to access this route.");
-//   }),
-// ]);
-
 // Validate NEW User Inputs
 export const validateUserInput = withValidationErrors([
   body("email")
@@ -55,6 +38,30 @@ export const validateUserInput = withValidationErrors([
     .trim()
     .isLength({ min: 8 })
     .withMessage("Password must be at least 8 characters long."),
+]);
+
+// Validate Google User Inputs
+export const validateGoogleLogin = withValidationErrors([
+  body("email")
+    .notEmpty()
+    .withMessage("Email is required.")
+    .isEmail()
+    .withMessage("Invalid email format.")
+    .trim(),
+  body("name").notEmpty().withMessage("Name is required.").trim(),
+  body("googleId").notEmpty().withMessage("Google ID is required.").trim(),
+]);
+
+// Validate Facebook User Inputs
+export const validateFacebookLogin = withValidationErrors([
+  body("email")
+    .notEmpty()
+    .withMessage("Email is required.")
+    .isEmail()
+    .withMessage("Invalid email format.")
+    .trim(),
+  body("name").notEmpty().withMessage("Name is required.").trim(),
+  body("facebookId").notEmpty().withMessage("Facebook ID is required.").trim(),
 ]);
 
 // Validate User Input on UPDATE

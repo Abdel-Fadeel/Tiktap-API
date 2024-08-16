@@ -2,7 +2,6 @@ import "express-async-errors";
 import express from "express";
 import mongoose from "mongoose";
 import session from "express-session";
-import passport from "passport";
 import dotenv from "dotenv";
 import helmet from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
@@ -12,7 +11,6 @@ import userRoutes from "./routes/usersRoute.js";
 import profileRoutes from "./routes/profilesRoute.js";
 import groupRoutes from "./routes/groupsRoute.js";
 import contactRoutes from "./routes/contactsRoute.js";
-import initializePassport from "./config/passport.js";
 import authMiddleware from "./middlewares/authMiddleware.js";
 import errorHandlerMiddleware from "./middlewares/errorHandler.js";
 
@@ -37,27 +35,6 @@ app.use(
     credentials: true, // Allow credentials (cookies, sessions, etc.)
   })
 );
-
-// Express session
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "your secret",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 1000 * 60 * 60 * 24, // 1 day
-    },
-  })
-);
-
-// Passport Config
-initializePassport(passport);
-
-// Initialize Passport and session
-app.use(passport.initialize());
-app.use(passport.session());
 
 // Routers
 app.use("/api/v1/auth", authRoutes);

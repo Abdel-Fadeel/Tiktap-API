@@ -1,17 +1,20 @@
 import express from "express";
 import rateLimiter from "express-rate-limit";
-import passport from "passport";
 import {
-  postRegister,
-  postLogin,
-  getLogout,
-  googleCallback,
-  facebookCallback,
   postForgotPassword,
   getResetPassword,
   postResetPassword,
+  googleLogin,
+  facebookLogin,
+  register,
+  login,
 } from "../controllers/authController.js";
-import { validateUserInput } from "../middlewares/validation.js";
+import {
+  validateFacebookLogin,
+  validateGoogleLogin,
+  validateLoginInput,
+  validateUserInput,
+} from "../middlewares/validation.js";
 
 // Rate Limiter
 const apiLimiter = rateLimiter({
@@ -23,42 +26,22 @@ const apiLimiter = rateLimiter({
 const router = express.Router();
 
 // Register
-router.post("/register", apiLimiter, postRegister);
+router.post("/register", apiLimiter, validateUserInput, register);
 
 // Login
-router.post("/login", apiLimiter, postLogin);
-
-// Logout
-router.get("/logout", getLogout);
+router.post("/login", apiLimiter, validateLoginInput, login);
 
 // Google Auth
-router.get(
-  "/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
-);
+router.post("/google", apiLimiter, validateGoogleLogin, googleLogin);
 
-router.get(
-  "/google/callback",
-  passport.authenticate("google", { failureRedirect: "/login" }),
-  googleCallback
-);
-
-// Facebook Auth
-router.get(
-  "/auth/facebook",
-  passport.authenticate("facebook", { scope: ["email"] })
-);
-router.get(
-  "/auth/facebook/callback",
-  passport.authenticate("facebook", { failureRedirect: "/login" }),
-  facebookCallback
-);
+// Google Auth
+router.post("/facebook", apiLimiter, validateFacebookLogin, facebookLogin);
 
 // Forgot Password
-router.post("/forgot", postForgotPassword);
+router.post("/forgot", apiLimiter, postForgotPassword);
 
 // Reset Password
-router.get("/reset/:token", getResetPassword);
-router.post("/reset/:token", postResetPassword);
+router.get("/reset/:token", apiLimiter, getResetPassword);
+router.post("/reset/:token", apiLimiter, postResetPassword);
 
 export default router;

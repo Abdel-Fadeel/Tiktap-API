@@ -1,14 +1,17 @@
 import bcrypt from "bcryptjs";
-import passport from "passport";
 import crypto from "crypto";
 import User from "../models/User.js";
 import { Resend } from "resend";
 import { generateToken } from "../utils/jwtUtils.js";
 import { StatusCodes } from "http-status-codes";
+import {
+  BadRequestError,
+  UnauthenticatedError,
+} from "../errors/customErrors.js";
 
 // const resend = new Resend(process.env.RESEND_API_KEY);
 
-export const postRegister = async (req, res) => {
+export const register = async (req, res) => {
   await User.create(req.body);
   res.status(StatusCodes.CREATED).json({
     status: true,
@@ -16,50 +19,100 @@ export const postRegister = async (req, res) => {
   });
 };
 
-export const postLogin = (req, res, next) => {
-  passport.authenticate("local", (err, user, info) => {
-    if (err) throw err;
-    if (!user)
-      return res.status(400).json({ status: false, message: info.message });
-    req.logIn(user, (err) => {
-      if (err) throw err;
-      const token = generateToken(user._id, user.email);
-      const loggedInUser = {
+export const login = async (req, res) => {
+  const { email, password } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user) throw new UnauthenticatedError("Invalid credentials");
+
+  const isPasswordCorrect = await user.comparePassword(password);
+  if (!isPasswordCorrect) throw new UnauthenticatedError("Invalid credentials");
+
+  // Generate a token or continue with your login logic
+  const token = generateToken(user._id, user.email);
+
+  res.status(StatusCodes.OK).json({
+    status: true,
+    message: "Logged in successfully",
+    data: {
+      token,
+      user: {
         id: user._id,
         email: user.email,
-        profiles: user.profiles,
-      };
-      res.status(200).json({
-        status: true,
-        message: "Logged in successfully",
-        data: {
-          token,
-          user: loggedInUser,
-        },
-      });
-    });
-  })(req, res, next);
-};
-
-export const getLogout = (req, res, next) => {
-  req.logout(function (err) {
-    if (err) {
-      return next(err);
-    }
-    res.status(200).json({ status: true, message: "Logout successful" });
+        name: user.name,
+        signupType: user.signupType,
+      },
+    },
   });
 };
 
-export const googleCallback = (req, res) => {
-  // Extract the token and user info from req.user (set by Passport.js)
-  const { token, user } = req.user;
+export const googleLogin = async (req, res) => {
+  const { googleId, email, name } = req.body;
 
-  // Redirect to frontend with token in query params
-  res.redirect(`http://localhost:5173/?token=${token}`);
+  // Find the user in the database
+  let user = await User.findOne({ googleId });
+
+  if (!user) {
+    // If the user doesn't exist, create a new one
+    user = new User({
+      googleId,
+      signupType: "google",
+      email,
+      name,
+    });
+    await user.save();
+  }
+
+  // Generate a token or continue with your login logic
+  const token = generateToken(user._id, user.email);
+
+  res.status(StatusCodes.OK).json({
+    status: true,
+    message: "Logged in successfully",
+    data: {
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        signupType: user.signupType,
+      },
+    },
+  });
 };
 
-export const facebookCallback = (req, res) => {
-  res.redirect("/dashboard");
+export const facebookLogin = async (req, res) => {
+  const { facebookId, email, name } = req.body;
+
+  // Find the user in the database
+  let user = await User.findOne({ facebookId });
+  if (!user) {
+    // If the user doesn't exist, create a new one
+    user = new User({
+      facebookId,
+      signupType: "facebook",
+      email,
+      name,
+    });
+    await user.save();
+  }
+
+  // Generate a token or continue with your login logic
+  const token = generateToken(user._id, user.email);
+
+  res.status(StatusCodes.OK).json({
+    status: true,
+    message: "Logged in successfully",
+    data: {
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        signupType: user.signupType,
+      },
+    },
+  });
 };
 
 export const postForgotPassword = async (req, res, next) => {
