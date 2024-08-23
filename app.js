@@ -11,6 +11,7 @@ import userRoutes from "./routes/usersRoute.js";
 import profileRoutes from "./routes/profilesRoute.js";
 import groupRoutes from "./routes/groupsRoute.js";
 import contactRoutes from "./routes/contactsRoute.js";
+import productRoutes from "./routes/productsRoutes.js";
 import authMiddleware from "./middlewares/authMiddleware.js";
 import errorHandlerMiddleware from "./middlewares/errorHandler.js";
 
@@ -42,6 +43,7 @@ app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/profiles", authMiddleware, profileRoutes);
 app.use("/api/v1/groups", authMiddleware, groupRoutes);
 app.use("/api/v1/contacts", authMiddleware, contactRoutes);
+app.use("/api/v1/products", authMiddleware, productRoutes);
 
 // NOT FOUND Handler
 app.use("*", (req, res, next) => {

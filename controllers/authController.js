@@ -41,6 +41,7 @@ export const login = async (req, res) => {
         email: user.email,
         name: user.name,
         signupType: user.signupType,
+        profiles: user.profiles,
       },
     },
   });
@@ -76,6 +77,7 @@ export const googleLogin = async (req, res) => {
         email: user.email,
         name: user.name,
         signupType: user.signupType,
+        profiles: user.profiles,
       },
     },
   });
@@ -110,6 +112,7 @@ export const facebookLogin = async (req, res) => {
         email: user.email,
         name: user.name,
         signupType: user.signupType,
+        profiles: user.profiles,
       },
     },
   });
