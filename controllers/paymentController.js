@@ -35,8 +35,6 @@ export const createPayment = async (req, res) => {
     }
   );
 
-  console.log("test 2");
-
   const paymentData = {
     userId, // Store user ID
     productId, // Store product ID
@@ -56,7 +54,6 @@ export const createPayment = async (req, res) => {
 };
 
 export const handlePaymentCallback = async (req, res) => {
-  console.log("reached");
   const { status, id, invoice_id } = req.query;
 
   const payment = await Payment.findOne({ invoiceId: invoice_id });
