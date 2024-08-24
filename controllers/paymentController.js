@@ -35,6 +35,8 @@ export const createPayment = async (req, res) => {
     }
   );
 
+  console.log("test 2");
+
   const paymentData = {
     userId, // Store user ID
     productId, // Store product ID
