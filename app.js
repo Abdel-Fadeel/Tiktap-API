@@ -32,11 +32,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://tiktap-api.onrender.com",
-      "https://moyasar.com",
-    ],
+    origin: "*",
     credentials: true,
   })
 );
