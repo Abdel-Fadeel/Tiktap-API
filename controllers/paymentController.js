@@ -25,7 +25,7 @@ export const createPayment = async (req, res) => {
       amount: product.price * 100,
       currency: "SAR",
       description: `Purchasing ${product.name}`,
-      success_url: "http://localhost:5100/api/v1/payments/payment-callback",
+      success_url: process.env.MOYASR_SUCCESS_URL,
     },
     {
       auth: {
