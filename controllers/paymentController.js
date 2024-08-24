@@ -54,6 +54,7 @@ export const createPayment = async (req, res) => {
 };
 
 export const handlePaymentCallback = async (req, res) => {
+  console.log("reached");
   const { status, id, invoice_id } = req.query;
 
   const payment = await Payment.findOne({ invoiceId: invoice_id });
