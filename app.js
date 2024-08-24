@@ -30,11 +30,14 @@ app.use(mongoSanitize());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Enable CORS
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://tiktap-api.onrender.com"],
-    credentials: true, // Allow credentials (cookies, sessions, etc.)
+    origin: [
+      "http://localhost:5173",
+      "https://tiktap-api.onrender.com",
+      "https://moyasar.com",
+    ],
+    credentials: true,
   })
 );
 
