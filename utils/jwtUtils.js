@@ -1,14 +1,11 @@
 import jwt from "jsonwebtoken";
-import crypto from "crypto";
-
-const jwtSecret = crypto.randomBytes(32).toString('hex');
 
 export const generateToken = (userId, email) => {
-  return jwt.sign({ userId, email }, jwtSecret, {
-    expiresIn: "30d",
+  return jwt.sign({ userId, email }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN,
   });
 };
 
 export const decodeToken = (token) => {
-  return jwt.verify(token, jwtSecret);
+  return jwt.verify(token, process.env.JWT_SECRET);
 };

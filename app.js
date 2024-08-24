@@ -12,6 +12,7 @@ import profileRoutes from "./routes/profilesRoute.js";
 import groupRoutes from "./routes/groupsRoute.js";
 import contactRoutes from "./routes/contactsRoute.js";
 import productRoutes from "./routes/productsRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
 import authMiddleware from "./middlewares/authMiddleware.js";
 import errorHandlerMiddleware from "./middlewares/errorHandler.js";
 
@@ -44,9 +45,11 @@ app.use("/api/v1/profiles", authMiddleware, profileRoutes);
 app.use("/api/v1/groups", authMiddleware, groupRoutes);
 app.use("/api/v1/contacts", authMiddleware, contactRoutes);
 app.use("/api/v1/products", authMiddleware, productRoutes);
+app.use("/api/v1/payments", paymentRoutes);
 
 // NOT FOUND Handler
 app.use("*", (req, res, next) => {
+  console.log(req);
   res.status(404).json({ message: "Route not found." });
 });
 

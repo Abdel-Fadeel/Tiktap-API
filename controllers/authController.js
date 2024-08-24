@@ -26,6 +26,7 @@ export const login = async (req, res) => {
   if (!user) throw new UnauthenticatedError("Invalid credentials");
 
   const isPasswordCorrect = await user.comparePassword(password);
+
   if (!isPasswordCorrect) throw new UnauthenticatedError("Invalid credentials");
 
   // Generate a token or continue with your login logic
@@ -42,6 +43,7 @@ export const login = async (req, res) => {
         name: user.name,
         signupType: user.signupType,
         profiles: user.profiles,
+        products: user.products,
       },
     },
   });
@@ -78,6 +80,7 @@ export const googleLogin = async (req, res) => {
         name: user.name,
         signupType: user.signupType,
         profiles: user.profiles,
+        products: user.products,
       },
     },
   });
@@ -113,6 +116,7 @@ export const facebookLogin = async (req, res) => {
         name: user.name,
         signupType: user.signupType,
         profiles: user.profiles,
+        products: user.products,
       },
     },
   });

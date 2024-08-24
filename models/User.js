@@ -27,6 +27,19 @@ const UserSchema = new mongoose.Schema({
       ref: "Profile",
     },
   ],
+  products: [
+    {
+      productId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product",
+        required: true,
+      },
+      amount: {
+        type: Number,
+        required: true,
+      },
+    },
+  ],
   resetPasswordToken: {
     type: String,
   },
@@ -36,7 +49,9 @@ const UserSchema = new mongoose.Schema({
 });
 
 // Use a pre-save hook to hash the user's password before saving it to the database
-UserSchema.pre("save", async function () {
+UserSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
+
   if (this.password) {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
