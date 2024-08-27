@@ -43,7 +43,9 @@ export const createContact = async (req, res) => {
 
     await contact.save({ session });
 
-    const profile = await Profile.findById(profileId).session(session);
+    const profile = await Profile.findOne({ profileId, userId }).session(
+      session
+    );
     if (!profile) {
       await session.abortTransaction();
       session.endSession();
