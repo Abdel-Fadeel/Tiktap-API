@@ -12,9 +12,9 @@ import {
 import {
   validateFacebookLogin,
   validateGoogleLogin,
-  validateLoginInput,
-  validateUserInput,
-} from "../middlewares/validation.js";
+  validateUserLogin,
+  validateUserRegister,
+} from "../validators/userValidators.js";
 
 // Rate Limiter
 const apiLimiter = rateLimiter({
@@ -26,10 +26,10 @@ const apiLimiter = rateLimiter({
 const router = express.Router();
 
 // Register
-router.post("/register", apiLimiter, validateUserInput, register);
+router.post("/register", apiLimiter, validateUserRegister, register);
 
 // Login
-router.post("/login", apiLimiter, validateLoginInput, login);
+router.post("/login", apiLimiter, validateUserLogin, login);
 
 // Google Auth
 router.post("/google", apiLimiter, validateGoogleLogin, googleLogin);

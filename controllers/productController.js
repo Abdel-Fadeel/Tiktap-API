@@ -5,7 +5,7 @@ import { BadRequestError } from "../errors/customErrors.js";
 // Get all products
 export const getProducts = async (req, res) => {
   const products = await Product.find();
-  res.status(StatusCodes.OK).json({ status: true, products });
+  res.status(StatusCodes.OK).json({ status: true, data: products });
 };
 
 // Get a product by ID
@@ -18,7 +18,7 @@ export const getProductById = async (req, res) => {
 
   res.status(StatusCodes.OK).json({
     status: true,
-    product,
+    data: product,
   });
 };
 
@@ -34,7 +34,11 @@ export const createProduct = async (req, res) => {
 
   res
     .status(StatusCodes.CREATED)
-    .json({ status: true, message: "Product created successfully", product });
+    .json({
+      status: true,
+      message: "Product created successfully",
+      data: product,
+    });
 };
 
 // Update a product
@@ -53,7 +57,11 @@ export const updateProduct = async (req, res) => {
 
   res
     .status(StatusCodes.OK)
-    .json({ status: true, message: "Product updated successfully", product });
+    .json({
+      status: true,
+      message: "Product updated successfully",
+      data: product,
+    });
 };
 
 // Delete a product

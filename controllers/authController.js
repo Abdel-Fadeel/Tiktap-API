@@ -1,13 +1,11 @@
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
+import { OAuth2Client } from "google-auth-library";
 import User from "../models/User.js";
 import { Resend } from "resend";
 import { generateToken } from "../utils/jwtUtils.js";
 import { StatusCodes } from "http-status-codes";
-import {
-  BadRequestError,
-  UnauthenticatedError,
-} from "../errors/customErrors.js";
+import { UnauthenticatedError } from "../errors/customErrors.js";
 
 // const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -49,10 +47,28 @@ export const login = async (req, res) => {
   });
 };
 
-export const googleLogin = async (req, res) => {
-  const { googleId, email, name } = req.body;
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-  // Find the user in the database
+async function verifyGoogleIdToken(token) {
+  const ticket = await client.verifyIdToken({
+    idToken: token,
+    audience: process.env.GOOGLE_CLIENT_ID, // Specify the CLIENT_ID of the app that accesses the backend
+  });
+  const payload = ticket.getPayload();
+
+  const googleId = payload["sub"]; // Unique Google ID for the user
+  const email = payload["email"];
+  const name = payload["name"];
+
+  return { googleId, email, name };
+}
+
+export const googleLogin = async (req, res) => {
+  const { googleId: googleIdToken } = req.body;
+
+  const { googleId, email, name } = await verifyGoogleIdToken(googleIdToken);
+
+  // Find the user in the database by Google ID
   let user = await User.findOne({ googleId });
 
   if (!user) {

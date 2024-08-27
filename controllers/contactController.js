@@ -3,34 +3,23 @@ import mongoose from "mongoose";
 import Contact from "../models/Contact.js";
 import Profile from "../models/Profile.js";
 import Group from "../models/Group.js";
+import { StatusCodes } from "http-status-codes";
+import { BadRequestError } from "../errors/customErrors.js";
 
 // Get all contacts
 export const getContacts = async (req, res) => {
   const { profileId } = req.query;
   const { userId } = req;
-  try {
-    const contacts = await Contact.find({ profileId, userId });
-    res.status(200).json(contacts);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Server error");
-  }
+  const contacts = await Contact.find({ profileId, userId });
+  res.status(StatusCodes.OK).json({ status: true, data: contacts });
 };
 
 // Get a contact by ID
 export const getContactById = async (req, res) => {
-  try {
-    const contact = await Contact.findOne({
-      _id: req.params.id,
-    });
-    if (!contact) {
-      return res.status(404).json({ msg: "Contact not found" });
-    }
-    res.status(200).json(contact);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Server error");
-  }
+  const contact = await Contact.findById(req.params.id);
+  if (!contact) throw new BadRequestError("Contact not found!");
+
+  res.status(StatusCodes.OK).json({ status: true, data: contact });
 };
 
 // Create a new contact
@@ -58,7 +47,7 @@ export const createContact = async (req, res) => {
     if (!profile) {
       await session.abortTransaction();
       session.endSession();
-      return res.status(404).json({ msg: "Profile not found" });
+      throw new BadRequestError("Profile not found!");
     }
 
     profile.contacts.push(contact._id);
@@ -67,12 +56,15 @@ export const createContact = async (req, res) => {
     await session.commitTransaction();
     session.endSession();
 
-    res.status(201).json(contact);
+    res.status(StatusCodes.CREATED).json({
+      status: true,
+      message: "Contact created successfully",
+      data: contact,
+    });
   } catch (err) {
     await session.abortTransaction();
     session.endSession();
-    console.error(err);
-    res.status(500).send("Server error");
+    throw err;
   }
 };
 
@@ -81,20 +73,18 @@ export const updateContact = async (req, res) => {
   const { fullName, phoneNumber, note, email, title } = req.body;
   const { userId } = req;
   const updates = { fullName, phoneNumber, note, email, title };
-  try {
-    const contact = await Contact.findOneAndUpdate(
-      { _id: req.params.id, userId },
-      updates,
-      { new: true }
-    );
-    if (!contact) {
-      return res.status(404).json({ msg: "Contact not found" });
-    }
-    res.status(200).json(contact);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Server error");
-  }
+  const contact = await Contact.findOneAndUpdate(
+    { _id: req.params.id, userId },
+    updates,
+    { new: true }
+  );
+  if (!contact) throw new BadRequestError("Contact not found!");
+
+  res.status(StatusCodes.OK).json({
+    status: true,
+    message: "Contact updated successfully",
+    data: contact,
+  });
 };
 
 // Delete a contact
@@ -113,14 +103,14 @@ export const deleteContact = async (req, res) => {
     if (!contact) {
       await session.abortTransaction();
       session.endSession();
-      return res.status(404).json({ msg: "Contact not found" });
+      if (!contact) throw new BadRequestError("Contact not found!");
     }
 
     const profile = await Profile.findById(contact.profileId).session(session);
     if (!profile) {
       await session.abortTransaction();
       session.endSession();
-      return res.status(404).json({ msg: "Profile not found" });
+      throw new BadRequestError("Profile not found!");
     }
 
     profile.contacts.pull(contact._id);
@@ -136,11 +126,12 @@ export const deleteContact = async (req, res) => {
     await session.commitTransaction();
     session.endSession();
 
-    res.status(200).json({ msg: "Contact deleted" });
+    res
+      .status(StatusCodes.OK)
+      .json({ status: true, message: "Contact deleted successfully" });
   } catch (err) {
     await session.abortTransaction();
     session.endSession();
-    console.error(err);
-    res.status(500).send("Server error");
+    throw err;
   }
 };

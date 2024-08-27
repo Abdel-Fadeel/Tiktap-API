@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import Profile from "../models/Profile.js";
 import User from "../models/User.js";
 import { validateURL } from "../utils/urlValidationUtils.js";
-import { NotFoundError } from "../errors/customErrors.js";
+import { BadRequestError, NotFoundError } from "../errors/customErrors.js";
 import { StatusCodes } from "http-status-codes";
 // import { deleteImage, uploadImage } from "../utils/uploadImgUtils.js";
 
@@ -10,21 +10,16 @@ export const getProfiles = async (req, res) => {
   const profiles = await Profile.find({ userId: req.userId }).populate(
     "groups contacts"
   );
-  res.status(200).json(profiles);
+  res.status(StatusCodes.OK).json({ status: true, data: profiles });
 };
 
 export const getProfileById = async (req, res) => {
-  try {
-    const profile = await Profile.findById(req.params.id).populate(
-      "groups contacts"
-    );
-    if (!profile) {
-      return res.status(404).json({ msg: "Profile not found" });
-    }
-    res.status(200).json(profile);
-  } catch (err) {
-    res.status(500).send("Server error");
-  }
+  const profile = await Profile.findById(req.params.id).populate(
+    "groups contacts"
+  );
+  if (!profile) throw new BadRequestError("Profile not found!");
+
+  res.status(StatusCodes.OK).json({ status: true, data: profile });
 };
 
 export const createProfile = async (req, res) => {
@@ -51,7 +46,7 @@ export const createProfile = async (req, res) => {
     if (!user) {
       await session.abortTransaction();
       session.endSession();
-      throw new NotFoundError("User not found");
+      throw new NotFoundError("User not found!");
     }
 
     user.profiles.push(profile._id);
@@ -60,7 +55,11 @@ export const createProfile = async (req, res) => {
     await session.commitTransaction();
     session.endSession();
 
-    res.status(StatusCodes.CREATED).json({ status: true, data: profile });
+    res.status(StatusCodes.CREATED).json({
+      status: true,
+      message: "Profile created successfully",
+      data: profile,
+    });
   } catch (err) {
     await session.abortTransaction();
     session.endSession();
@@ -77,27 +76,25 @@ export const updateProfile = async (req, res) => {
     title,
   };
 
-  try {
-    const profile = await Profile.findById(req.params.id);
-    if (!profile) {
-      return res.status(404).json({ msg: "Profile not found" });
+  const profile = await Profile.findById(req.params.id);
+  if (!profile) throw new BadRequestError("Profile not found!");
+
+  if (req.file) {
+    if (profile.photo) {
+      // await deleteImage(profile.photo);
     }
-
-    if (req.file) {
-      if (profile.photo) {
-        // await deleteImage(profile.photo);
-      }
-      // const newPhotoUrl = await uploadImage(req.file);
-      // updates.photo = newPhotoUrl;
-    }
-
-    Object.assign(profile, updates);
-    await profile.save();
-
-    res.status(StatusCodes.OK).json({ status: true, data: profile });
-  } catch (err) {
-    res.status(500).send("Server error");
+    // const newPhotoUrl = await uploadImage(req.file);
+    // updates.photo = newPhotoUrl;
   }
+
+  Object.assign(profile, updates);
+  await profile.save();
+
+  res.status(StatusCodes.OK).json({
+    status: true,
+    message: "Profile updated successfully",
+    data: profile,
+  });
 };
 
 export const deleteProfile = async (req, res) => {
@@ -113,7 +110,7 @@ export const deleteProfile = async (req, res) => {
     if (!profile) {
       await session.abortTransaction();
       session.endSession();
-      return res.status(404).json({ msg: "Profile not found" });
+      throw new BadRequestError("Profile not found!");
     }
 
     // Find the user and update their profiles array
@@ -121,7 +118,7 @@ export const deleteProfile = async (req, res) => {
     if (!user) {
       await session.abortTransaction();
       session.endSession();
-      return res.status(404).json({ msg: "User not found" });
+      throw new BadRequestError("User not found!");
     }
 
     user.profiles = user.profiles.filter(
@@ -132,12 +129,13 @@ export const deleteProfile = async (req, res) => {
     await session.commitTransaction();
     session.endSession();
 
-    res.status(200).json({ msg: "Profile deleted" });
+    res
+      .status(StatusCodes.OK)
+      .json({ status: true, message: "Profile deleted successfully" });
   } catch (err) {
     await session.abortTransaction();
     session.endSession();
-    console.error(err);
-    res.status(500).send("Server error");
+    throw err;
   }
 };
 
@@ -146,29 +144,22 @@ export const addLink = async (req, res) => {
   const { type, url, profileId } = req.body;
   const { userId } = req;
 
-  if (!validateURL(type, url)) {
-    return res.status(400).json({ msg: `Invalid ${type} URL` });
-  }
+  if (!validateURL(type, url)) throw new BadRequestError(`Invalid ${type} URL`);
 
-  try {
-    const profile = await Profile.findOne({
-      userId,
-      _id: profileId,
-    });
+  const profile = await Profile.findOne({
+    userId,
+    _id: profileId,
+  });
 
-    if (!profile) {
-      return res.status(404).json({ msg: "Profile not found" });
-    }
+  if (!profile) throw new BadRequestError("Profile not found!");
 
-    profile.links.push({ type, url });
+  profile.links.push({ type, url });
 
-    await profile.save();
+  await profile.save();
 
-    res.status(200).json(profile);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Server error");
-  }
+  res
+    .status(StatusCodes.OK)
+    .json({ status: true, message: "Link added successfully", data: profile });
 };
 
 // Update Link in Profile
@@ -177,31 +168,25 @@ export const updateLink = async (req, res) => {
   const { userId } = req;
   const { linkId } = req.params;
 
-  if (!validateURL(type, url)) {
-    return res.status(400).json({ msg: `Invalid ${type} URL` });
-  }
+  if (!validateURL(type, url))
+    throw new BadRequestError(`Invalid ${type} URL!`);
 
-  try {
-    const profile = await Profile.findOne({ userId, _id: profileId });
-    if (!profile) {
-      return res.status(404).json({ msg: "Profile not found" });
-    }
+  const profile = await Profile.findOne({ userId, _id: profileId });
+  if (!profile) throw new BadRequestError("Profile not found!");
 
-    const link = profile.links.id(linkId);
-    if (!link) {
-      return res.status(404).json({ msg: "Link not found" });
-    }
+  const link = profile.links.id(linkId);
+  if (!link) throw new BadRequestError("Link not found!");
 
-    link.type = type;
-    link.url = url;
+  link.type = type;
+  link.url = url;
 
-    await profile.save();
+  await profile.save();
 
-    res.status(200).json(profile);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Server error");
-  }
+  res.status(StatusCodes.OK).json({
+    status: true,
+    message: "Link updated successfully",
+    data: profile,
+  });
 };
 
 // Delete Link in Profile
@@ -210,29 +195,21 @@ export const deleteLink = async (req, res) => {
   const { userId } = req;
   const { linkId } = req.params;
 
-  console.log(userId);
-  console.log(profileId);
+  const profile = await Profile.findOne({ userId, _id: profileId });
+  if (!profile) throw new BadRequestError("Profile not found!");
 
-  try {
-    const profile = await Profile.findOne({ userId, _id: profileId });
-    if (!profile) {
-      return res.status(404).json({ msg: "Profile not found" });
-    }
+  const linkIndex = profile.links.findIndex(
+    (link) => link._id.toString() === linkId
+  );
+  if (linkIndex === -1) throw new BadRequestError("Link not found!");
 
-    const linkIndex = profile.links.findIndex(
-      (link) => link._id.toString() === linkId
-    );
-    if (linkIndex === -1) {
-      return res.status(404).json({ msg: "Link not found" });
-    }
+  profile.links.splice(linkIndex, 1);
 
-    profile.links.splice(linkIndex, 1);
+  await profile.save();
 
-    await profile.save();
-
-    res.status(200).json({ msg: "Link deleted" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Server error");
-  }
+  res.status(StatusCodes.OK).json({
+    status: true,
+    message: "Link deleted successfully",
+    data: profile,
+  });
 };
