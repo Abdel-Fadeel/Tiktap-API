@@ -42,11 +42,7 @@ export const createGroup = async (req, res) => {
     await group.save({ session });
 
     const profile = await Profile.findById(profileId).session(session);
-    if (!profile) {
-      await session.abortTransaction();
-      session.endSession();
-      throw new BadRequestError("Profile not found");
-    }
+    if (!profile) throw new BadRequestError("Profile not found");
 
     profile.groups.push(group._id);
     await profile.save({ session });
@@ -97,18 +93,10 @@ export const deleteGroup = async (req, res) => {
       userId,
     }).session(session);
 
-    if (!group) {
-      await session.abortTransaction();
-      session.endSession();
-      throw new BadRequestError("Group not found!");
-    }
+    if (!group) throw new BadRequestError("Group not found!");
 
     const profile = await Profile.findById(group.profileId).session(session);
-    if (!profile) {
-      await session.abortTransaction();
-      session.endSession();
-      throw new BadRequestError("Profile not found");
-    }
+    if (!profile) throw new BadRequestError("Profile not found");
 
     profile.groups.pull(group._id);
     await profile.save({ session });

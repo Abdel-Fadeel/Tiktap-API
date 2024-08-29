@@ -107,19 +107,11 @@ export const deleteProfile = async (req, res) => {
     const profile = await Profile.findByIdAndDelete(req.params.id).session(
       session
     );
-    if (!profile) {
-      await session.abortTransaction();
-      session.endSession();
-      throw new BadRequestError("Profile not found!");
-    }
+    if (!profile) throw new BadRequestError("Profile not found!");
 
     // Find the user and update their profiles array
     const user = await User.findById(profile.userId).session(session);
-    if (!user) {
-      await session.abortTransaction();
-      session.endSession();
-      throw new BadRequestError("User not found!");
-    }
+    if (!user) throw new BadRequestError("User not found!");
 
     user.profiles = user.profiles.filter(
       (profileId) => profileId.toString() !== req.params.id

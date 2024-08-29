@@ -98,18 +98,10 @@ export const deleteContact = async (req, res) => {
       userId,
     }).session(session);
 
-    if (!contact) {
-      await session.abortTransaction();
-      session.endSession();
-      if (!contact) throw new BadRequestError("Contact not found!");
-    }
+    if (!contact) throw new BadRequestError("Contact not found!");
 
     const profile = await Profile.findById(contact.profileId).session(session);
-    if (!profile) {
-      await session.abortTransaction();
-      session.endSession();
-      throw new BadRequestError("Profile not found!");
-    }
+    if (!profile) throw new BadRequestError("Profile not found!");
 
     profile.contacts.pull(contact._id);
     await profile.save({ session });
