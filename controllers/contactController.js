@@ -46,11 +46,7 @@ export const createContact = async (req, res) => {
     const profile = await Profile.findOne({ profileId, userId }).session(
       session
     );
-    if (!profile) {
-      await session.abortTransaction();
-      session.endSession();
-      throw new BadRequestError("Profile not found!");
-    }
+    if (!profile) throw new BadRequestError("Profile not found!");
 
     profile.contacts.push(contact._id);
     await profile.save({ session });
