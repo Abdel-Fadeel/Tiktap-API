@@ -23,7 +23,7 @@ export const getProfileById = async (req, res) => {
 };
 
 export const createProfile = async (req, res) => {
-  const { name, username, phoneNumber, title } = req.body;
+  const { name, username, phoneNumber } = req.body;
   const session = await mongoose.startSession();
 
   try {
@@ -34,7 +34,6 @@ export const createProfile = async (req, res) => {
       name,
       username,
       phoneNumber,
-      title,
       email: req.email,
       userId: req.userId, // Associate profile with user
     });
@@ -43,11 +42,7 @@ export const createProfile = async (req, res) => {
 
     // Find the user by ID and update their profiles array
     const user = await User.findById(req.userId).session(session);
-    if (!user) {
-      await session.abortTransaction();
-      session.endSession();
-      throw new NotFoundError("User not found!");
-    }
+    if (!user) throw new NotFoundError("User not found!");
 
     user.profiles.push(profile._id);
     await user.save({ session });
@@ -136,8 +131,6 @@ export const addLink = async (req, res) => {
   const { type, url, isEnabled, profileId } = req.body;
   const { userId } = req;
 
-  if (!validateURL(type, url)) throw new BadRequestError(`Invalid ${type} URL`);
-
   const profile = await Profile.findOne({
     userId,
     _id: profileId,
@@ -159,9 +152,6 @@ export const updateLink = async (req, res) => {
   const { type, url, isEnabled, profileId } = req.body;
   const { userId } = req;
   const { linkId } = req.params;
-
-  if (!validateURL(type, url))
-    throw new BadRequestError(`Invalid ${type} URL!`);
 
   const profile = await Profile.findOne({ userId, _id: profileId });
   if (!profile) throw new BadRequestError("Profile not found!");
