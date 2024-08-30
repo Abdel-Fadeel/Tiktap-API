@@ -133,7 +133,7 @@ export const deleteProfile = async (req, res) => {
 
 // Add Link to Profile
 export const addLink = async (req, res) => {
-  const { type, url, profileId } = req.body;
+  const { type, url, isEnabled, profileId } = req.body;
   const { userId } = req;
 
   if (!validateURL(type, url)) throw new BadRequestError(`Invalid ${type} URL`);
@@ -145,7 +145,7 @@ export const addLink = async (req, res) => {
 
   if (!profile) throw new BadRequestError("Profile not found!");
 
-  profile.links.push({ type, url });
+  profile.links.push({ type, url, isEnabled });
 
   await profile.save();
 
@@ -156,7 +156,7 @@ export const addLink = async (req, res) => {
 
 // Update Link in Profile
 export const updateLink = async (req, res) => {
-  const { type, url, profileId } = req.body;
+  const { type, url, isEnabled, profileId } = req.body;
   const { userId } = req;
   const { linkId } = req.params;
 
@@ -171,6 +171,7 @@ export const updateLink = async (req, res) => {
 
   link.type = type;
   link.url = url;
+  link.isEnabled = isEnabled;
 
   await profile.save();
 

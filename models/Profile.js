@@ -29,6 +29,7 @@ const ProfileSchema = new mongoose.Schema({
     {
       type: { type: String },
       url: { type: String },
+      isEnabled: { type: Boolean },
     },
   ],
   groups: [
