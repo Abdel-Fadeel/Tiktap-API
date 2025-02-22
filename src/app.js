@@ -1,18 +1,17 @@
 import "express-async-errors";
 import express from "express";
 import mongoose from "mongoose";
-import session from "express-session";
 import dotenv from "dotenv";
 import helmet from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
 import cors from "cors";
-import authRoutes from "./routes/authRoute.js";
-import userRoutes from "./routes/usersRoute.js";
-import profileRoutes from "./routes/profilesRoute.js";
-import groupRoutes from "./routes/groupsRoute.js";
-import contactRoutes from "./routes/contactsRoute.js";
-import productRoutes from "./routes/productsRoutes.js";
-import paymentRoutes from "./routes/paymentRoutes.js";
+import { authRouter } from "./features/authentication/authRouter.js";
+import { usersRouter } from "./features/users/usersRouter.js";
+import { profilesRouter } from "./features/profile/profilesRouter.js";
+import { groupsRouter } from "./features/groups/groupsRouter.js";
+import { contactsRouter } from "./features/contacts/contactsRouter.js";
+import { productsRouter } from "./features/products/productsRouter.js";
+import { paymentsRouter } from "./features/payments/paymentsRouter.js";
 import authMiddleware from "./middlewares/authMiddleware.js";
 import errorHandlerMiddleware from "./middlewares/errorHandler.js";
 
@@ -37,14 +36,16 @@ app.use(
   })
 );
 
+const BASE_API_URL = "/api/v1";
+
 // Routers
-app.use("/api/v1/auth", authRoutes);
-app.use("/api/v1/users", userRoutes);
-app.use("/api/v1/profiles", authMiddleware, profileRoutes);
-app.use("/api/v1/groups", authMiddleware, groupRoutes);
-app.use("/api/v1/contacts", authMiddleware, contactRoutes);
-app.use("/api/v1/products", authMiddleware, productRoutes);
-app.use("/api/v1/payments", paymentRoutes);
+app.use(`${BASE_API_URL}/auth`, authRouter);
+app.use(`${BASE_API_URL}/users`, usersRouter);
+app.use(`${BASE_API_URL}/profiles`, authMiddleware, profilesRouter);
+app.use(`${BASE_API_URL}/groups`, authMiddleware, groupsRouter);
+app.use(`${BASE_API_URL}/contacts`, authMiddleware, contactsRouter);
+app.use(`${BASE_API_URL}/products`, authMiddleware, productsRouter);
+app.use(`${BASE_API_URL}/payments`, paymentsRouter);
 
 // NOT FOUND Handler
 app.use("*", (req, res, next) => {

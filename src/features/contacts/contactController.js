@@ -1,10 +1,10 @@
 // controllers/contactController.js
 import mongoose from "mongoose";
-import Contact from "../models/Contact.js";
-import Profile from "../models/Profile.js";
-import Group from "../models/Group.js";
+import Contact from "../contacts/Contact.js";
+import Profile from "../profile/Profile.js";
+import Group from "../groups/Group.js";
 import { StatusCodes } from "http-status-codes";
-import { BadRequestError } from "../errors/customErrors.js";
+import { BadRequestError } from "../../errors/customErrors.js";
 
 // Get all contacts
 export const getContacts = async (req, res) => {

@@ -1,10 +1,10 @@
 // controllers/groupController.js
 import mongoose from "mongoose";
-import Group from "../models/Group.js";
-import Profile from "../models/Profile.js";
-import Contact from "../models/Contact.js";
+import Group from "./Group.js";
+import Profile from "../profile/Profile.js";
+import Contact from "../contacts/Contact.js";
 import { StatusCodes } from "http-status-codes";
-import { BadRequestError } from "../errors/customErrors.js";
+import { BadRequestError } from "../../errors/customErrors.js";
 
 // Get all groups
 export const getGroups = async (req, res) => {

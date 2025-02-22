@@ -1,8 +1,7 @@
 import mongoose from "mongoose";
-import Profile from "../models/Profile.js";
-import User from "../models/User.js";
-import { validateURL } from "../utils/urlValidationUtils.js";
-import { BadRequestError, NotFoundError } from "../errors/customErrors.js";
+import Profile from "../profile/Profile.js";
+import User from "../users/User.js";
+import { BadRequestError, NotFoundError } from "../../errors/customErrors.js";
 import { StatusCodes } from "http-status-codes";
 // import { deleteImage, uploadImage } from "../utils/uploadImgUtils.js";
 

@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "npm install",
-    "start": "node app.js",
-    "dev": "node --watch app.js"
+    "start": "node src/app.js",
+    "dev": "node --watch src/app.js"
   },
   "keywords": [],
   "author": "",

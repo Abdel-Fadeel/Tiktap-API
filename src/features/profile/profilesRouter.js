@@ -1,5 +1,6 @@
 import express from "express";
-const router = express.Router();
+
+export const profilesRouter = express.Router();
 import {
   getProfiles,
   getProfileById,
@@ -9,17 +10,20 @@ import {
   addLink,
   updateLink,
   deleteLink,
-} from "../controllers/profileController.js";
+} from "./profileController.js";
 import {
   validateAddUpdateLink,
   validateCreateProfile,
   validateDeleteLink,
   validateUpdateProfile,
-} from "../validators/profileValidators.js";
+} from "../../validators/profileValidators.js";
 
-router.route("/").get(getProfiles).post(validateCreateProfile, createProfile);
+profilesRouter
+  .route("/")
+  .get(getProfiles)
+  .post(validateCreateProfile, createProfile);
 
-router
+profilesRouter
   .route("/:id")
   .get(getProfileById)
   // .put(upload.single("photo"), updateProfile)
@@ -27,10 +31,8 @@ router
   .delete(deleteProfile);
 
 // Add Link
-router.post("/addLink", validateAddUpdateLink, addLink);
+profilesRouter.post("/addLink", validateAddUpdateLink, addLink);
 // Update Link
-router.put("/updateLink/:linkId", validateAddUpdateLink, updateLink);
+profilesRouter.put("/updateLink/:linkId", validateAddUpdateLink, updateLink);
 // Delete Link
-router.delete("/deleteLink/:linkId", validateDeleteLink, deleteLink);
-
-export default router;
+profilesRouter.delete("/deleteLink/:linkId", validateDeleteLink, deleteLink);

@@ -1,6 +1,6 @@
 import { StatusCodes } from "http-status-codes";
-import Product from "../models/Product.js";
-import { BadRequestError } from "../errors/customErrors.js";
+import Product from "./Product.js";
+import { BadRequestError } from "../../errors/customErrors.js";
 
 // Get all products
 export const getProducts = async (req, res) => {
@@ -32,13 +32,11 @@ export const createProduct = async (req, res) => {
     price,
   });
 
-  res
-    .status(StatusCodes.CREATED)
-    .json({
-      status: true,
-      message: "Product created successfully",
-      data: product,
-    });
+  res.status(StatusCodes.CREATED).json({
+    status: true,
+    message: "Product created successfully",
+    data: product,
+  });
 };
 
 // Update a product
@@ -55,13 +53,11 @@ export const updateProduct = async (req, res) => {
 
   if (!product) throw new BadRequestError("Product not found!");
 
-  res
-    .status(StatusCodes.OK)
-    .json({
-      status: true,
-      message: "Product updated successfully",
-      data: product,
-    });
+  res.status(StatusCodes.OK).json({
+    status: true,
+    message: "Product updated successfully",
+    data: product,
+  });
 };
 
 // Delete a product

@@ -1,7 +1,6 @@
 import { body } from "express-validator";
-import User from "../models/User.js";
 import { withValidationErrors } from "../middlewares/validation.js";
-import Profile from "../models/Profile.js";
+import Profile from "../features/profile/Profile.js";
 import { BadRequestError } from "../errors/customErrors.js";
 import { validateURL } from "../utils/urlValidationUtils.js";
 import mongoose from "mongoose";

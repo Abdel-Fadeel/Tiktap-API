@@ -1,5 +1,5 @@
 import { body } from "express-validator";
-import User from "../models/User.js";
+import User from "../features/users/User.js";
 import { withValidationErrors } from "../middlewares/validation.js";
 
 // Validate NEW User Inputs

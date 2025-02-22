@@ -1,11 +1,10 @@
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { OAuth2Client } from "google-auth-library";
-import User from "../models/User.js";
-import { Resend } from "resend";
-import { generateToken } from "../utils/jwtUtils.js";
+import User from "../users/User.js";
+import { generateToken } from "../../utils/jwtUtils.js";
 import { StatusCodes } from "http-status-codes";
-import { UnauthenticatedError } from "../errors/customErrors.js";
+import { UnauthenticatedError } from "../../errors/customErrors.js";
 
 // const resend = new Resend(process.env.RESEND_API_KEY);
 
