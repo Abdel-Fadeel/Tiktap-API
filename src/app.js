@@ -6,14 +6,13 @@ import helmet from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
 import cors from "cors";
 import { authRouter } from "./features/authentication/authRouter.js";
-import { usersRouter } from "./features/users/usersRouter.js";
-import { profilesRouter } from "./features/profile/profilesRouter.js";
+import { profilesRouter } from "./features/profiles/profilesRouter.js";
 import { groupsRouter } from "./features/groups/groupsRouter.js";
 import { contactsRouter } from "./features/contacts/contactsRouter.js";
 import { productsRouter } from "./features/products/productsRouter.js";
 import { paymentsRouter } from "./features/payments/paymentsRouter.js";
 import authMiddleware from "./middlewares/authMiddleware.js";
-import errorHandlerMiddleware from "./middlewares/errorHandler.js";
+import errorHandlerMiddleware from "./middlewares/errorHandlerMiddleware.js";
 
 // Access .env files
 dotenv.config();
@@ -40,7 +39,6 @@ const BASE_API_URL = "/api/v1";
 
 // Routers
 app.use(`${BASE_API_URL}/auth`, authRouter);
-app.use(`${BASE_API_URL}/users`, usersRouter);
 app.use(`${BASE_API_URL}/profiles`, authMiddleware, profilesRouter);
 app.use(`${BASE_API_URL}/groups`, authMiddleware, groupsRouter);
 app.use(`${BASE_API_URL}/contacts`, authMiddleware, contactsRouter);

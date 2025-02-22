@@ -1,8 +1,8 @@
 // controllers/groupController.js
 import mongoose from "mongoose";
-import Group from "./Group.js";
-import Profile from "../profile/Profile.js";
-import Contact from "../contacts/Contact.js";
+import Group from "./groupModel.js";
+import Profile from "../profiles/profileModel.js";
+import Contact from "../contacts/contactModel.js";
 import { StatusCodes } from "http-status-codes";
 import { BadRequestError } from "../../errors/customErrors.js";
 

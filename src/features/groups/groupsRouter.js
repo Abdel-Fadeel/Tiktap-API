@@ -9,7 +9,7 @@ import {
   deleteGroup,
   addContactToGroup,
   removeContactFromGroup,
-} from "./groupController.js";
+} from "./groupsController.js";
 
 groupsRouter.route("/").get(getGroups).post(createGroup);
 

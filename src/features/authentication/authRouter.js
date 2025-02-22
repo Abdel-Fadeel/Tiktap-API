@@ -5,12 +5,10 @@ import {
   getResetPassword,
   postResetPassword,
   googleLogin,
-  facebookLogin,
   register,
   login,
 } from "./authController.js";
 import {
-  validateFacebookLogin,
   validateGoogleLogin,
   validateUserLogin,
   validateUserRegister,
@@ -33,9 +31,6 @@ authRouter.post("/login", apiLimiter, validateUserLogin, login);
 
 // Google Auth
 authRouter.post("/google", apiLimiter, validateGoogleLogin, googleLogin);
-
-// Google Auth
-authRouter.post("/facebook", apiLimiter, validateFacebookLogin, facebookLogin);
 
 // Forgot Password
 authRouter.post("/forgot", apiLimiter, postForgotPassword);

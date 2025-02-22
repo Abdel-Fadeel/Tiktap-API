@@ -10,7 +10,7 @@ import {
   addLink,
   updateLink,
   deleteLink,
-} from "./profileController.js";
+} from "./profilesController.js";
 import {
   validateAddUpdateLink,
   validateCreateProfile,

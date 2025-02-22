@@ -7,7 +7,7 @@ import {
   createContact,
   updateContact,
   deleteContact,
-} from "./contactController.js";
+} from "./contactsController.js";
 
 contactsRouter.route("/").get(getContacts).post(createContact);
 

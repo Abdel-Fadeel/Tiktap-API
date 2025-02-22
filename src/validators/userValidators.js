@@ -1,6 +1,6 @@
 import { body } from "express-validator";
-import User from "../features/users/User.js";
-import { withValidationErrors } from "../middlewares/validation.js";
+import User from "../features/users/userModel.js";
+import { withValidationErrors } from "../middlewares/validationMiddleware.js";
 
 // Validate NEW User Inputs
 export const validateUserRegister = withValidationErrors([
@@ -41,18 +41,6 @@ export const validateUserLogin = withValidationErrors([
 // Validate Google User Inputs
 export const validateGoogleLogin = withValidationErrors([
   body("googleId").trim().notEmpty().withMessage("Google ID is required"),
-]);
-
-// Validate Facebook User Inputs
-export const validateFacebookLogin = withValidationErrors([
-  body("email")
-    .trim()
-    .notEmpty()
-    .withMessage("Email is required")
-    .isEmail()
-    .withMessage("Invalid email format"),
-  body("name").trim().notEmpty().withMessage("Name is required"),
-  body("facebookId").trim().notEmpty().withMessage("Facebook ID is required"),
 ]);
 
 // Validate User Input on UPDATE

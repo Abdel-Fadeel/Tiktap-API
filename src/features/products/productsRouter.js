@@ -7,7 +7,7 @@ import {
   getProductById,
   getProducts,
   updateProduct,
-} from "./productController.js";
+} from "./productsController.js";
 
 productsRouter.route("/").get(getProducts).post(createProduct);
 

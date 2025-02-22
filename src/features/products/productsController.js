@@ -1,5 +1,5 @@
 import { StatusCodes } from "http-status-codes";
-import Product from "./Product.js";
+import Product from "./productModel.js";
 import { BadRequestError } from "../../errors/customErrors.js";
 
 // Get all products

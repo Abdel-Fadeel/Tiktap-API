@@ -1,9 +1,9 @@
 import axios from "axios";
 import { BadRequestError } from "../../errors/customErrors.js";
-import Product from "../products/Product.js";
+import Product from "../products/productModel.js";
 import { StatusCodes } from "http-status-codes";
-import User from "../users/User.js";
-import Payment from "../payments/Payment.js";
+import User from "../users/userModel.js";
+import Payment from "./paymentModel.js";
 
 export const createPayment = async (req, res) => {
   const { userId } = req;

@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { OAuth2Client } from "google-auth-library";
-import User from "../users/User.js";
+import User from "../users/userModel.js";
 import { generateToken } from "../../utils/jwtUtils.js";
 import { StatusCodes } from "http-status-codes";
 import { UnauthenticatedError } from "../../errors/customErrors.js";
@@ -75,42 +75,6 @@ export const googleLogin = async (req, res) => {
     user = new User({
       googleId,
       signupType: "google",
-      email,
-      name,
-    });
-    await user.save();
-  }
-
-  // Generate a token or continue with your login logic
-  const token = generateToken(user._id, user.email);
-
-  res.status(StatusCodes.OK).json({
-    status: true,
-    message: "Logged in successfully",
-    data: {
-      token,
-      user: {
-        id: user._id,
-        email: user.email,
-        name: user.name,
-        signupType: user.signupType,
-        profiles: user.profiles,
-        products: user.products,
-      },
-    },
-  });
-};
-
-export const facebookLogin = async (req, res) => {
-  const { facebookId, email, name } = req.body;
-
-  // Find the user in the database
-  let user = await User.findOne({ facebookId });
-  if (!user) {
-    // If the user doesn't exist, create a new one
-    user = new User({
-      facebookId,
-      signupType: "facebook",
       email,
       name,
     });
