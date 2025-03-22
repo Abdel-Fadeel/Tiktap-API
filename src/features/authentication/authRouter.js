@@ -1,9 +1,6 @@
 import express from "express";
 import rateLimiter from "express-rate-limit";
 import {
-  postForgotPassword,
-  getResetPassword,
-  postResetPassword,
   googleLogin,
   register,
   login,
@@ -32,9 +29,3 @@ authRouter.post("/login", apiLimiter, validateUserLogin, login);
 // Google Auth
 authRouter.post("/google", apiLimiter, validateGoogleLogin, googleLogin);
 
-// Forgot Password
-authRouter.post("/forgot", apiLimiter, postForgotPassword);
-
-// Reset Password
-authRouter.get("/reset/:token", apiLimiter, getResetPassword);
-authRouter.post("/reset/:token", apiLimiter, postResetPassword);
