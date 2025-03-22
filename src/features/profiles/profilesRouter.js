@@ -30,9 +30,6 @@ profilesRouter
   .put(validateUpdateProfile, updateProfile)
   .delete(deleteProfile);
 
-// Add Link
 profilesRouter.post("/addLink", validateAddUpdateLink, addLink);
-// Update Link
 profilesRouter.put("/updateLink/:linkId", validateAddUpdateLink, updateLink);
-// Delete Link
 profilesRouter.delete("/deleteLink/:linkId", validateDeleteLink, deleteLink);

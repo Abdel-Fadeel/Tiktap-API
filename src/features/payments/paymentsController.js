@@ -1,4 +1,3 @@
-import axios from "axios";
 import { BadRequestError } from "../../errors/customErrors.js";
 import Product from "../products/productModel.js";
 import { StatusCodes } from "http-status-codes";
@@ -19,38 +18,37 @@ export const createPayment = async (req, res) => {
   if (product.price < 1)
     throw new BadRequestError("Price must be at least 1 SAR.");
 
-  const paymentResponse = await axios.post(
-    "https://api.moyasar.com/v1/invoices",
-    {
+  const response = await fetch("https://api.moyasar.com/v1/invoices", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Basic ${Buffer.from(`${process.env.MOYASAR_API_KEY}:`).toString("base64")}`,
+    },
+    body: JSON.stringify({
       amount: product.price * 100,
       currency: "SAR",
       description: `Purchasing ${product.name}`,
       success_url: process.env.MOYASR_SUCCESS_URL,
-    },
-    {
-      auth: {
-        username: process.env.MOYASAR_API_KEY,
-        password: "",
-      },
-    }
-  );
+    }),
+  });
+
+  if (!response.ok) throw new BadRequestError("Failed to create payment.");
+
+  const paymentResponse = await response.json();
 
   const paymentData = {
-    userId, // Store user ID
-    productId, // Store product ID
+    userId,
+    productId,
     amount: product.price * 100,
     currency: "SAR",
     description: product.name,
-    status: "initiated", // Set initial status
-    invoiceId: paymentResponse.data.id, // Use invoice ID returned from Moyasar
+    status: "initiated",
+    invoiceId: paymentResponse.id,
   };
 
-  // Save paymentData to your database
   await Payment.create(paymentData);
 
-  res
-    .status(StatusCodes.CREATED)
-    .json({ status: true, paymentUrl: paymentResponse.data.url });
+  res.status(StatusCodes.CREATED).json({ status: true, paymentUrl: paymentResponse.url });
 };
 
 export const handlePaymentCallback = async (req, res) => {
@@ -59,9 +57,7 @@ export const handlePaymentCallback = async (req, res) => {
   const payment = await Payment.findOne({ invoiceId: invoice_id });
 
   if (!payment)
-    throw new BadRequestError(
-      `Payment record not found for invoice ID: ${invoice_id}`
-    );
+    throw new BadRequestError(`Payment record not found for invoice ID: ${invoice_id}`);
 
   payment.status = status;
 
@@ -71,17 +67,12 @@ export const handlePaymentCallback = async (req, res) => {
     if (!user) throw new BadRequestError("User not found!");
 
     const productIndex = user.products.findIndex(
-      (product) => product.productId.toString() === payment.productId.toString()
+        (product) => product.productId.toString() === payment.productId.toString()
     );
 
     if (productIndex !== -1) user.products[productIndex].amount += 1;
-    else
-      user.products.push({
-        productId: payment.productId,
-        amount: 1,
-      });
+    else user.products.push({ productId: payment.productId, amount: 1 });
 
-    // Save the updated user document
     await user.save();
   }
 
@@ -114,14 +105,14 @@ export const handlePaymentCallback = async (req, res) => {
             background-color: #ffffff;
         }
         h1 {
-            color: #28a745; /* Green color for success */
+            color: #28a745;
         }
         p {
             font-size: 1.2em;
         }
         a {
             text-decoration: none;
-            color: #007bff; /* Bootstrap primary color */
+            color: #007bff;
             font-weight: bold;
         }
         a:hover {
@@ -133,10 +124,9 @@ export const handlePaymentCallback = async (req, res) => {
     <div class="container">
         <h1>Payment Successful!</h1>
         <p>Thank you for your payment. Your transaction has been completed.</p>
-        <p>Your transaction ID is: <strong>{{${id}}}</strong></p>
+        <p>Your transaction ID is: <strong>${id}</strong></p>
     </div>
 </body>
 </html>
-
-    `);
+  `);
 };
