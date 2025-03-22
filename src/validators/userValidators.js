@@ -1,6 +1,7 @@
 import { body } from "express-validator";
 import User from "../features/users/userModel.js";
 import { withValidationErrors } from "../middlewares/validationMiddleware.js";
+import {BadRequestError} from "../errors/customErrors.js";
 
 // Validate NEW User Inputs
 export const validateUserRegister = withValidationErrors([

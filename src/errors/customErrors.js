@@ -1,7 +1,6 @@
 import { StatusCodes } from "http-status-codes";
 
 export class AppError extends Error {
-  statusCode = this.statusCode;
   constructor(message, statusCode, name) {
     super(message);
     this.name = name;
