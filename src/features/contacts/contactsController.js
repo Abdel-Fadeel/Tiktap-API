@@ -42,10 +42,12 @@ export const createContact = async (req, res) => {
     });
 
     await contact.save({ session });
+    console.log(profileId, userId);
 
-    const profile = await Profile.findOne({ profileId, userId }).session(
+    const profile = await Profile.findOne({ _id: profileId, userId }).session(
       session
     );
+    console.log(profile);
     if (!profile) throw new BadRequestError("Profile not found!");
 
     profile.contacts.push(contact._id);
