@@ -1,6 +1,9 @@
 import express from "express";
-
-export const productsRouter = express.Router();
+import {
+  validateCreateProduct,
+  validateUpdateProduct,
+  validateProductId,
+} from "../../validators/productValidators.js";
 import {
   createProduct,
   deleteProduct,
@@ -9,10 +12,19 @@ import {
   updateProduct,
 } from "./productsController.js";
 
-productsRouter.route("/").get(getProducts).post(createProduct);
+export const productsRouter = express.Router();
 
-productsRouter
-  .route("/:id")
-  .get(getProductById)
-  .put(updateProduct)
-  .delete(deleteProduct);
+// Get all products
+productsRouter.get("/", getProducts);
+
+// Create new product
+productsRouter.post("/", validateCreateProduct, createProduct);
+
+// Get single product
+productsRouter.get("/:id", validateProductId, getProductById);
+
+// Update product
+productsRouter.put("/:id", validateProductId, validateUpdateProduct, updateProduct);
+
+// Delete product
+productsRouter.delete("/:id", validateProductId, deleteProduct);

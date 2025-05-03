@@ -1,6 +1,9 @@
 import express from "express";
-
-export const contactsRouter = express.Router();
+import {
+  validateCreateContact,
+  validateUpdateContact,
+  validateContactId,
+} from "../../validators/contactValidators.js";
 import {
   getContacts,
   getContactById,
@@ -9,10 +12,19 @@ import {
   deleteContact,
 } from "./contactsController.js";
 
-contactsRouter.route("/").get(getContacts).post(createContact);
+export const contactsRouter = express.Router();
 
-contactsRouter
-  .route("/:id")
-  .get(getContactById)
-  .put(updateContact)
-  .delete(deleteContact);
+// Get all contacts
+contactsRouter.get("/", getContacts);
+
+// Create new contact
+contactsRouter.post("/", validateCreateContact, createContact);
+
+// Get single contact
+contactsRouter.get("/:id", validateContactId, getContactById);
+
+// Update contact
+contactsRouter.put("/:id", validateContactId, validateUpdateContact, updateContact);
+
+// Delete contact
+contactsRouter.delete("/:id", validateContactId, deleteContact);

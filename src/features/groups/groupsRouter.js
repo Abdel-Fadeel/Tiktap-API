@@ -1,6 +1,10 @@
 import express from "express";
-
-export const groupsRouter = express.Router();
+import {
+  validateCreateGroup,
+  validateUpdateGroup,
+  validateGroupId,
+  validateAddContactsToGroup,
+} from "../../validators/groupValidators.js";
 import {
   getGroups,
   getGroupById,
@@ -11,13 +15,25 @@ import {
   removeContactFromGroup,
 } from "./groupsController.js";
 
-groupsRouter.route("/").get(getGroups).post(createGroup);
+export const groupsRouter = express.Router();
 
-groupsRouter
-  .route("/:id")
-  .get(getGroupById)
-  .put(updateGroup)
-  .delete(deleteGroup);
+// Get all groups
+groupsRouter.get("/", getGroups);
 
-groupsRouter.post("/addContact", addContactToGroup);
-groupsRouter.post("/removeContact", removeContactFromGroup);
+// Create new group
+groupsRouter.post("/", validateCreateGroup, createGroup);
+
+// Get single group
+groupsRouter.get("/:id", validateGroupId, getGroupById);
+
+// Update group
+groupsRouter.put("/:id", validateGroupId, validateUpdateGroup, updateGroup);
+
+// Delete group
+groupsRouter.delete("/:id", validateGroupId, deleteGroup);
+
+// Add contact to group
+groupsRouter.post("/addContact", validateAddContactsToGroup, addContactToGroup);
+
+// Remove contact from group
+groupsRouter.post("/removeContact", validateAddContactsToGroup, removeContactFromGroup);

@@ -4,22 +4,37 @@ import bcrypt from "bcryptjs";
 const UserSchema = new mongoose.Schema({
   email: {
     type: String,
-    required: true,
     unique: true,
+    trim: true,
+    lowercase: true,
   },
   password: {
     type: String,
+    select: false,
+  },
+  name: {
+    type: String,
+    trim: true,
   },
   googleId: {
     type: String,
+    sparse: true,
   },
   facebookId: {
     type: String,
+    sparse: true,
   },
   signupType: {
     type: String,
     enum: ["email/password", "google", "facebook"],
     default: "email/password",
+  },
+  isEmailVerified: {
+    type: Boolean,
+    default: false,
+  },
+  lastLogin: {
+    type: Date,
   },
   profiles: [
     {
@@ -32,11 +47,10 @@ const UserSchema = new mongoose.Schema({
       productId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Product",
-        required: true,
       },
       amount: {
         type: Number,
-        required: true,
+        default: 0,
       },
     },
   ],
@@ -46,6 +60,8 @@ const UserSchema = new mongoose.Schema({
   resetPasswordExpires: {
     type: Date,
   },
+}, {
+  timestamps: true,
 });
 
 // Use a pre-save hook to hash the user's password before saving it to the database

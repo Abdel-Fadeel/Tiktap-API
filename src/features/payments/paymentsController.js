@@ -130,3 +130,48 @@ export const handlePaymentCallback = async (req, res) => {
 </html>
   `);
 };
+
+export const getPaymentById = async (req, res) => {
+  const { id } = req.params;
+  const { userId } = req;
+
+  const payment = await Payment.findOne({ _id: id, userId });
+  if (!payment) throw new BadRequestError("Payment not found!");
+
+  res.status(StatusCodes.OK).json({ status: true, data: payment });
+};
+
+export const refundPayment = async (req, res) => {
+  const { id } = req.params;
+  const { userId } = req;
+  const { reason } = req.body;
+
+  const payment = await Payment.findOne({ _id: id, userId });
+  if (!payment) throw new BadRequestError("Payment not found!");
+
+  if (payment.status !== "paid") {
+    throw new BadRequestError("Only paid payments can be refunded");
+  }
+
+  const response = await fetch(`https://api.moyasar.com/v1/invoices/${payment.invoiceId}/refund`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Basic ${Buffer.from(`${process.env.MOYASAR_API_KEY}:`).toString("base64")}`,
+    },
+    body: JSON.stringify({
+      amount: payment.amount,
+      reason: reason || "Customer request",
+    }),
+  });
+
+  if (!response.ok) throw new BadRequestError("Failed to process refund");
+
+  payment.status = "refunded";
+  await payment.save();
+
+  res.status(StatusCodes.OK).json({ 
+    status: true, 
+    message: "Payment refunded successfully" 
+  });
+};

@@ -4,11 +4,15 @@ import {
   googleLogin,
   register,
   login,
+  resetPassword,
+  forgotPassword,
 } from "./authController.js";
 import {
   validateGoogleLogin,
   validateUserLogin,
   validateUserRegister,
+  validateResetPassword,
+  validateForgotPassword,
 } from "../../validators/userValidators.js";
 
 // Rate Limiter
@@ -28,4 +32,10 @@ authRouter.post("/login", apiLimiter, validateUserLogin, login);
 
 // Google Auth
 authRouter.post("/google", apiLimiter, validateGoogleLogin, googleLogin);
+
+// Forgot Password
+authRouter.post("/forgot-password", apiLimiter, validateForgotPassword, forgotPassword);
+
+// Reset Password
+authRouter.post("/reset-password", apiLimiter, validateResetPassword, resetPassword);
 
