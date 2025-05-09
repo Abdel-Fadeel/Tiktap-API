@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { IPayment } from '../../types/index.js';
+import { IPayment } from '@/types/index.js';
 
 const PaymentSchema = new mongoose.Schema({
   userId: {

@@ -1,9 +1,9 @@
-import { BadRequestError } from "../../errors/customErrors.js";
+import { BadRequestError } from "@/errors/customErrors.js";
 import Product from "../products/productModel.js";
 import { StatusCodes } from "http-status-codes";
 import User from "../users/userModel.js";
 import Payment from "./paymentModel.js";
-import { IRequest, IResponse, IPayment } from "../../types/index.js";
+import { IRequest, IResponse, IPayment } from "@/types/index.js";
 
 export const createPayment = async (req: IRequest, res: IResponse) => {
   const { userId } = req;

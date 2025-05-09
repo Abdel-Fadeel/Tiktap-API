@@ -3,7 +3,7 @@ import {
   validateCreateContact,
   validateUpdateContact,
   validateContactId,
-} from "../../validators/contactValidators.js";
+} from "@/validators/contactValidators.js";
 import {
   getContacts,
   getContactById,

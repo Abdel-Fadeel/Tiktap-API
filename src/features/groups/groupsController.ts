@@ -3,8 +3,8 @@ import Group from "./groupModel.js";
 import Profile from "../profiles/profileModel.js";
 import Contact from "../contacts/contactModel.js";
 import { StatusCodes } from "http-status-codes";
-import { BadRequestError } from "../../errors/customErrors.js";
-import { IRequest, IResponse } from "../../types/index.js";
+import { BadRequestError } from "@/errors/customErrors.js";
+import { IRequest, IResponse } from "@/types/index.js";
 
 // Get all groups
 export const getGroups = async (req: IRequest, res: IResponse) => {

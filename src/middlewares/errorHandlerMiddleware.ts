@@ -1,7 +1,6 @@
 import { StatusCodes } from "http-status-codes";
 import { BadRequestError } from "../errors/customErrors.js";
 import { Request, Response, NextFunction } from "express";
-import { Error as MongooseError } from "mongoose";
 
 interface CustomError extends Error {
   statusCode?: number;
@@ -36,38 +35,28 @@ const handleJWTExpiredError = () =>
 
 const errorHandlerMiddleware = (
   err: CustomError,
-  req: Request,
+  _: Request,
   res: Response,
   next: NextFunction
 ) => {
-  let error = { ...err, name: err.name, message: err.message };
-  
-  // Handle specific error types
-  if (error.name === "CastError") error = handleCastErrorDB(error);
-  if (error.code === 11000) error = handleDuplicateFieldsDB(error);
-  if (error.name === "ValidationError") error = handleValidationErrorDB(error);
-  if (error.name === "JsonWebTokenError") error = handleJWTError();
-  if (error.name === "TokenExpiredError") error = handleJWTExpiredError();
-
-  // Set appropriate status code
-  const statusCode = error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR;
-  
-  // Prepare error response
-  const response: {
-    status: boolean;
-    message: string;
-    stack?: string;
-  } = {
-    status: false,
-    message: error.message || "Something went wrong, please try again.",
-  };
-
-  // Add stack trace in development
-  if (process.env.NODE_ENV === "development") {
-    response.stack = err.stack;
+  // Handle MongoDB duplicate key error
+  if (err.name === "MongoServerError" && err.code === 11000) {
+    const field = Object.keys(err.keyValue || {})[0];
+    const value = err.keyValue?.[field];
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message: `${field} '${value}' already exists!`,
+      status: false
+    });
   }
 
-  res.status(statusCode).json(response);
+  // Handle other errors
+  const statusCode = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR;
+  const message = err.message || "Something went wrong, please try again.";
+
+  return res.status(statusCode).json({
+    message,
+    status: false
+  });
 };
 
 export default errorHandlerMiddleware; 

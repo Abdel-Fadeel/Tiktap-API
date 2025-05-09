@@ -91,8 +91,6 @@ export interface IRequest extends Request {
     id: string;
     email: string;
   };
-  userId?: string;
-  email?: string;
   file?: Express.Multer.File;
 }
 

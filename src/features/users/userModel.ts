@@ -1,16 +1,19 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
-import { IUser } from '../../types/index.js';
+import { IUser } from '@/types/index.js';
 
 const UserSchema = new mongoose.Schema({
   email: {
     type: String,
+    required: [true, "Please provide email"],
     unique: true,
-    trim: true,
     lowercase: true,
+    trim: true,
   },
   password: {
     type: String,
+    required: [true, "Please provide password"],
+    minlength: 8,
     select: false,
   },
   name: {
@@ -21,14 +24,14 @@ const UserSchema = new mongoose.Schema({
     type: String,
     sparse: true,
   },
-  facebookId: {
-    type: String,
-    sparse: true,
-  },
   signupType: {
     type: String,
-    enum: ["email/password", "google", "facebook"],
+    enum: ["email/password", "google"],
     default: "email/password",
+  },
+  phoneNumber: {
+    type: String,
+    trim: true,
   },
   isEmailVerified: {
     type: Boolean,
@@ -36,31 +39,10 @@ const UserSchema = new mongoose.Schema({
   },
   lastLogin: {
     type: Date,
+    default: Date.now,
   },
-  profiles: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Profile",
-    },
-  ],
-  products: [
-    {
-      productId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Product",
-      },
-      amount: {
-        type: Number,
-        default: 0,
-      },
-    },
-  ],
-  resetPasswordToken: {
-    type: String,
-  },
-  resetPasswordExpires: {
-    type: Date,
-  },
+  resetPasswordToken: String,
+  resetPasswordExpires: Date,
 }, {
   timestamps: true,
 });

@@ -3,14 +3,14 @@ import {
   validateCreatePayment,
   validatePaymentId,
   validateRefundPayment,
-} from "../../validators/paymentValidators.js";
+} from "@/validators/paymentValidators.js";
 import { 
   createPayment, 
   handlePaymentCallback,
   getPaymentById,
   refundPayment,
 } from "./paymentsController.js";
-import { authMiddleware } from "../../middlewares/authMiddleware.js";
+import { authMiddleware } from "@/middlewares/authMiddleware.js";
 
 export const paymentsRouter = express.Router();
 

@@ -30,8 +30,14 @@ export const validateUpdateProfile = withValidationErrors([
     .notEmpty()
     .withMessage("Username is required")
     .custom(async (username: string, { req }) => {
-      const profile = await Profile.findOne({ username });
-      if (profile && profile.userId.toString() !== req.userId) {
+      if (!req.params?.id) {
+        throw new BadRequestError("Profile ID is required");
+      }
+      const profile = await Profile.findOne({ 
+        username,
+        _id: { $ne: req.params.id }
+      });
+      if (profile) {
         throw new BadRequestError("Username already exists");
       }
     }),
@@ -44,9 +50,14 @@ export const validateUpdateProfile = withValidationErrors([
   body("title").optional().trim(), // Optional title field
 ]);
 
+export const validateProfileExists = async (req: any) => {
+  const profile = await Profile.findOne({ _id: req.params.id, userId: req.user?.id });
+  if (!profile) throw new BadRequestError("Profile not found!");
+  return profile;
+};
+
 export const validateAddUpdateLink = withValidationErrors([
   body("type").trim().notEmpty().withMessage("Type is required"),
-
   body("url")
     .trim()
     .notEmpty()
@@ -60,12 +71,10 @@ export const validateAddUpdateLink = withValidationErrors([
       }
       return true;
     }),
-
   body("isEnabled")
     .optional()
     .isBoolean()
     .withMessage("isEnabled must be a boolean"),
-
   body("profileId")
     .notEmpty()
     .withMessage("Profile ID is required")

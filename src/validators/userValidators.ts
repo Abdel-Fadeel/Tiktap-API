@@ -11,24 +11,19 @@ export const validateUserRegister = withValidationErrors([
     .notEmpty()
     .withMessage("Email is required")
     .isEmail()
-    .withMessage("Invalid email format")
-    .custom(async (email: string) => {
-      const user = await User.findOne({ email });
-      if (user) throw new BadRequestError("Email already exists");
-    }),
+    .withMessage("Invalid email format"),
 
   body("password")
     .notEmpty()
     .withMessage("Password is required")
     .isLength({ min: 8 })
     .withMessage("Password must be at least 8 characters long")
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/)
     .withMessage("Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"),
 
   body("name")
+    .optional()
     .trim()
-    .notEmpty()
-    .withMessage("Name is required")
     .isLength({ min: 2, max: 50 })
     .withMessage("Name must be between 2 and 50 characters"),
 
@@ -91,15 +86,7 @@ export const validateUpdateUser = withValidationErrors([
     .optional()
     .trim()
     .isEmail()
-    .withMessage("Invalid email format")
-    .custom(async (email: string, { req }) => {
-      if (email) {
-        const user = await User.findOne({ email }) as IUser;
-        if (user && user._id.toString() !== req.user.id) {
-          throw new BadRequestError("Email already exists");
-        }
-      }
-    }),
+    .withMessage("Invalid email format"),
 
   body("phoneNumber")
     .optional()
@@ -132,12 +119,27 @@ export const validateResetPassword = withValidationErrors([
     .notEmpty()
     .withMessage("Email is required")
     .isEmail()
-    .withMessage("Invalid email format"),
+    .withMessage("Invalid email format")
+    .custom(async (email: string) => {
+      const user = await User.findOne({ email });
+      if (!user) {
+        throw new BadRequestError("No user found with this email");
+      }
+    }),
 
   body("token")
     .trim()
     .notEmpty()
-    .withMessage("Reset token is required"),
+    .withMessage("Reset token is required")
+    .custom(async (token: string, { req }) => {
+      const user = await User.findOne({ email: req.body.email });
+      if (user?.resetPasswordToken !== token) {
+        throw new BadRequestError("Invalid reset token");
+      }
+      if (user?.resetPasswordExpires && user.resetPasswordExpires < new Date()) {
+        throw new BadRequestError("Reset token has expired");
+      }
+    }),
 
   body("newPassword")
     .notEmpty()
@@ -154,5 +156,11 @@ export const validateForgotPassword = withValidationErrors([
     .notEmpty()
     .withMessage("Email is required")
     .isEmail()
-    .withMessage("Invalid email format"),
+    .withMessage("Invalid email format")
+    .custom(async (email: string) => {
+      const user = await User.findOne({ email });
+      if (!user) {
+        throw new BadRequestError("No user found with this email");
+      }
+    }),
 ]); 

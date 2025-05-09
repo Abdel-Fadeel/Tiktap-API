@@ -1,10 +1,10 @@
 import { StatusCodes } from "http-status-codes";
 import Product from "./productModel.js";
-import { BadRequestError } from "../../errors/customErrors.js";
-import { IRequest, IResponse } from "../../types/index.js";
+import { BadRequestError } from "@/errors/customErrors.js";
+import { IRequest, IResponse } from "@/types/index.js";
 
 // Get all products
-export const getProducts = async (req: IRequest, res: IResponse) => {
+export const getProducts = async (_: IRequest, res: IResponse) => {
   const products = await Product.find();
   res.status(StatusCodes.OK).json({ status: true, data: products });
 };

@@ -13,12 +13,12 @@ import {
   validateUserRegister,
   validateResetPassword,
   validateForgotPassword,
-} from "../../validators/userValidators.js";
+} from "@/validators/userValidators.js";
 
 // Rate Limiter
 const apiLimiter = rateLimiter({
   windowMs: 1000 * 60 * 15,
-  max: 15,
+  limit: 15,
   message: { message: "IP rate limit exceeded, try again in 15 minutes" },
 });
 

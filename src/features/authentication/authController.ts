@@ -1,10 +1,10 @@
 import User from "../users/userModel.js";
-import { generateToken } from "../../utils/jwtUtils.js";
+import { generateToken } from "@/utils/jwtUtils.js";
 import { StatusCodes } from "http-status-codes";
-import { UnauthenticatedError, BadRequestError } from "../../errors/customErrors.js";
+import { UnauthenticatedError, BadRequestError } from "@/errors/customErrors.js";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
-import { IRequest, IResponse } from "../../types/index.js";
+import { IRequest, IResponse } from "@/types/index.js";
 
 // Create a transporter for sending emails
 const transporter = nodemailer.createTransport({
@@ -16,7 +16,7 @@ const transporter = nodemailer.createTransport({
 });
 
 export const register = async (req: IRequest, res: IResponse) => {
-  const { email, password, name } = req.body;
+  const { email, password, name, phoneNumber } = req.body;
 
   // Check if user already exists
   const existingUser = await User.findOne({ email });
@@ -24,12 +24,13 @@ export const register = async (req: IRequest, res: IResponse) => {
     throw new BadRequestError("Email already registered");
   }
 
-  // Validate password strength
-  if (password && password.length < 8) {
-    throw new BadRequestError("Password must be at least 8 characters long");
-  }
-
-  const user = await User.create({ ...req.body, lastLogin: new Date() });
+  const user = await User.create({ 
+    email, 
+    password, 
+    name, 
+    phoneNumber,
+    lastLogin: new Date() 
+  });
   
   res.status(StatusCodes.CREATED).json({
     status: true,
@@ -46,10 +47,6 @@ export const register = async (req: IRequest, res: IResponse) => {
 
 export const login = async (req: IRequest, res: IResponse) => {
   const { email, password } = req.body;
-
-  if (!email || !password) {
-    throw new BadRequestError("Please provide email and password");
-  }
 
   const user = await User.findOne({ email }).select("+password");
   if (!user) throw new UnauthenticatedError("Invalid credentials");
@@ -84,19 +81,15 @@ export const login = async (req: IRequest, res: IResponse) => {
 export const googleLogin = async (req: IRequest, res: IResponse) => {
   const { googleId, email, name } = req.body;
 
-  if (!googleId || !email || !name) {
-    throw new BadRequestError("Please provide all required fields");
+  // Check if user exists with this email but different signup method
+  const existingUser = await User.findOne({ email });
+  if (existingUser && !existingUser.googleId) {
+    throw new BadRequestError("Email already registered with different signup method");
   }
 
   let user = await User.findOne({ googleId });
 
   if (!user) {
-    // Check if email already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      throw new BadRequestError("Email already registered with different signup method");
-    }
-
     user = new User({
       googleId,
       signupType: "google",

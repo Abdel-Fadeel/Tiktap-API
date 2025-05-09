@@ -4,7 +4,7 @@ import {
   validateUpdateGroup,
   validateGroupId,
   validateAddContactsToGroup,
-} from "../../validators/groupValidators.js";
+} from "@/validators/groupValidators.js";
 import {
   getGroups,
   getGroupById,

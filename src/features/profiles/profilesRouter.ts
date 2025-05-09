@@ -14,9 +14,9 @@ import {
   validateCreateProfile,
   validateDeleteLink,
   validateUpdateProfile,
-} from "../../validators/profileValidators.js";
-import { withValidationErrors } from "../../middlewares/validationMiddleware.js";
-import { authMiddleware } from "../../middlewares/authMiddleware.js";
+} from "@/validators/profileValidators.js";
+import { withValidationErrors } from "@/middlewares/validationMiddleware.js";
+import { authMiddleware } from "@/middlewares/authMiddleware.js";
 
 const router = Router();
 

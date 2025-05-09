@@ -1,11 +1,5 @@
-import mongoose, { Types } from "mongoose";
-import { IProfile } from "../../types/index.js";
-
-interface ILink {
-  type: string;
-  url: string;
-  isEnabled: boolean;
-}
+import mongoose from "mongoose";
+import { IProfile } from "@/types/index.js";
 
 const ProfileSchema = new mongoose.Schema({
   email: {
@@ -18,8 +12,9 @@ const ProfileSchema = new mongoose.Schema({
   },
   username: {
     type: String,
+    required: [true, "Username is required"],
     unique: true,
-    required: true,
+    trim: true,
   },
   phoneNumber: {
     type: String,

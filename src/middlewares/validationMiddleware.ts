@@ -9,9 +9,11 @@ export const withValidationErrors = (validations: any[]) => {
     (req: Request, res: Response, next: NextFunction) => {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        throw new BadRequestError(
-          errors.array().map((error) => error.msg).join(', ')
-        );
+        const errorMessage = errors.array().map((error) => error.msg).join(', ');
+        return res.status(400).json({
+          message: errorMessage,
+          status: false
+        });
       }
       next();
     },

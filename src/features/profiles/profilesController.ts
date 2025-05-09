@@ -1,13 +1,14 @@
 import mongoose from "mongoose";
 import Profile from "./profileModel.js";
 import User from "../users/userModel.js";
-import { BadRequestError, NotFoundError } from "../../errors/customErrors.js";
+import { BadRequestError, NotFoundError } from "@/errors/customErrors.js";
 import { StatusCodes } from "http-status-codes";
-import { IRequest, IResponse } from "../../types/index.js";
+import { IRequest, IResponse } from "@/types/index.js";
+import { validateProfileExists } from "@/validators/profileValidators.js";
 // import { deleteImage, uploadImage } from "../utils/uploadImgUtils.js";
 
 export const getProfiles = async (req: IRequest, res: IResponse) => {
-  const profiles = await Profile.find({ userId: req.userId }).populate(
+  const profiles = await Profile.find({ userId: req.user?.id }).populate(
     "groups contacts"
   );
   res.status(StatusCodes.OK).json({ status: true, data: profiles });
@@ -23,113 +24,70 @@ export const getProfileById = async (req: IRequest, res: IResponse) => {
 };
 
 export const createProfile = async (req: IRequest, res: IResponse) => {
-  const { name, username, phoneNumber } = req.body;
-  const session = await mongoose.startSession();
-
-  try {
-    session.startTransaction();
-
-    // Create new profile
-    const profile = new Profile({
-      name,
-      username,
-      phoneNumber,
-      email: req.email,
-      userId: req.userId, // Associate profile with user
-    });
-
-    await profile.save({ session });
-
-    // Find the user by ID and update their profiles array
-    const user = await User.findById(req.userId).session(session);
-    if (!user) throw new NotFoundError("User not found!");
-
-    user.profiles.push(profile._id);
-    await user.save({ session });
-
-    await session.commitTransaction();
-    session.endSession();
-
-    res.status(StatusCodes.CREATED).json({
-      status: true,
-      message: "Profile created successfully",
-      data: profile,
-    });
-  } catch (err) {
-    await session.abortTransaction();
-    session.endSession();
-    throw err;
-  }
-};
-
-export const updateProfile = async (req: IRequest, res: IResponse) => {
   const { name, username, phoneNumber, title } = req.body;
-  const updates = {
+  const userId = req.user?.id;
+  const email = req.user?.email;
+
+  const profile = await Profile.create({
+    email,
     name,
     username,
     phoneNumber,
     title,
-  };
+    userId,
+  });
 
-  const profile = await Profile.findById(req.params.id);
+  res
+    .status(StatusCodes.CREATED)
+    .json({ status: true, message: "Profile created successfully", data: profile });
+};
+
+export const getProfile = async (req: IRequest, res: IResponse) => {
+  const userId = req.user?.id;
+
+  const profile = await Profile.findOne({ userId });
   if (!profile) throw new BadRequestError("Profile not found!");
 
-  if (req.file) {
-    if (profile.photo) {
-      // await deleteImage(profile.photo);
-    }
-    // const newPhotoUrl = await uploadImage(req.file);
-    // updates.photo = newPhotoUrl;
-  }
+  res
+    .status(StatusCodes.OK)
+    .json({ status: true, message: "Profile fetched successfully", data: profile });
+};
 
-  Object.assign(profile, updates);
+export const updateProfile = async (req: IRequest, res: IResponse) => {
+  const { name, username, phoneNumber, title } = req.body;
+  const email = req.user?.email;
+
+  if (!email) throw new BadRequestError("User email not found");
+
+  const profile = await validateProfileExists(req);
+  
+  // Update fields
+  if (name) profile.name = name;
+  if (username) profile.username = username;
+  if (phoneNumber) profile.phoneNumber = phoneNumber;
+  if (title) profile.title = title;
+  profile.email = email;
+
   await profile.save();
 
-  res.status(StatusCodes.OK).json({
-    status: true,
-    message: "Profile updated successfully",
-    data: profile,
-  });
+  res
+    .status(StatusCodes.OK)
+    .json({ status: true, message: "Profile updated successfully", data: profile });
 };
 
 export const deleteProfile = async (req: IRequest, res: IResponse) => {
-  const session = await mongoose.startSession();
+  const profile = await validateProfileExists(req);
+  await profile.deleteOne();
 
-  try {
-    session.startTransaction();
-
-    // Find and delete the profile
-    const profile = await Profile.findByIdAndDelete(req.params.id).session(
-      session
-    );
-    if (!profile) throw new BadRequestError("Profile not found!");
-
-    // Find the user and update their profiles array
-    const user = await User.findById(profile.userId).session(session);
-    if (!user) throw new BadRequestError("User not found!");
-
-    user.profiles = user.profiles.filter(
-      (profileId) => profileId.toString() !== req.params.id
-    );
-    await user.save({ session });
-
-    await session.commitTransaction();
-    session.endSession();
-
-    res
-      .status(StatusCodes.OK)
-      .json({ status: true, message: "Profile deleted successfully" });
-  } catch (err) {
-    await session.abortTransaction();
-    session.endSession();
-    throw err;
-  }
+  res
+    .status(StatusCodes.OK)
+    .json({ status: true, message: "Profile deleted successfully" });
 };
 
 // Add Link to Profile
 export const addLink = async (req: IRequest, res: IResponse) => {
   const { type, url, isEnabled, profileId } = req.body;
-  const { userId } = req;
+  const userId = req.user?.id;
 
   const profile = await Profile.findOne({
     userId,
@@ -149,7 +107,7 @@ export const addLink = async (req: IRequest, res: IResponse) => {
 // Update Link in Profile
 export const updateLink = async (req: IRequest, res: IResponse) => {
   const { type, url, isEnabled, profileId } = req.body;
-  const { userId } = req;
+  const userId = req.user?.id;
   const { linkId } = req.params;
 
   const profile = await Profile.findOne({ userId, _id: profileId });
@@ -174,7 +132,7 @@ export const updateLink = async (req: IRequest, res: IResponse) => {
 // Delete Link in Profile
 export const deleteLink = async (req: IRequest, res: IResponse) => {
   const { profileId } = req.body;
-  const { userId } = req;
+  const userId = req.user?.id;
   const { linkId } = req.params;
 
   const profile = await Profile.findOne({ userId, _id: profileId });

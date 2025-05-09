@@ -6,9 +6,9 @@ import {
   updateProduct,
   deleteProduct,
 } from "./productsController.js";
-import { validateCreateProduct, validateProductId } from "../../validators/productValidators.js";
-import { withValidationErrors } from "../../middlewares/validationMiddleware.js";
-import { authMiddleware } from "../../middlewares/authMiddleware.js";
+import { validateCreateProduct, validateProductId } from "@/validators/productValidators.js";
+import { withValidationErrors } from "@/middlewares/validationMiddleware.js";
+import { authMiddleware } from "@/middlewares/authMiddleware.js";
 
 const router = Router();
 

@@ -1,11 +1,11 @@
-import { Request, Response, NextFunction } from 'express';
-import { UnauthenticatedError } from '../errors/customErrors.js';
-import { verifyToken } from '../utils/jwtUtils.js';
-import { IRequest } from '../types/index.js';
+import {NextFunction, Request, Response} from 'express';
+import {UnauthenticatedError} from '../errors/customErrors.js';
+import {verifyToken} from '../utils/jwtUtils.js';
+import {IRequest} from '../types/index.js';
 
 export const authMiddleware = async (
   req: Request,
-  res: Response,
+  _: Response,
   next: NextFunction
 ) => {
   const authHeader = req.headers.authorization;
@@ -17,8 +17,7 @@ export const authMiddleware = async (
   const token = authHeader.split(' ')[1];
 
   try {
-    const decoded = verifyToken(token);
-    (req as IRequest).user = decoded;
+    (req as IRequest).user = verifyToken(token);
     next();
   } catch (error) {
     throw new UnauthenticatedError('Invalid token');
