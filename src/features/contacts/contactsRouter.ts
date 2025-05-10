@@ -3,7 +3,7 @@ import {
   validateCreateContact,
   validateUpdateContact,
   validateContactId,
-} from "@/validators/contactValidators.js";
+} from "./contactValidators.js";
 import {
   getContacts,
   getContactById,
@@ -11,20 +11,25 @@ import {
   updateContact,
   deleteContact,
 } from "./contactsController.js";
+import { authMiddleware } from "@/middlewares/authMiddleware.js";
 
-export const contactsRouter = express.Router();
+const router = express.Router();
+
+router.use(authMiddleware);
 
 // Get all contacts
-contactsRouter.get("/", getContacts);
+router.get("/", getContacts);
 
 // Create new contact
-contactsRouter.post("/", validateCreateContact, createContact);
+router.post("/", validateCreateContact, createContact);
 
 // Get single contact
-contactsRouter.get("/:id", validateContactId, getContactById);
+router.get("/:id", validateContactId, getContactById);
 
 // Update contact
-contactsRouter.put("/:id", validateContactId, validateUpdateContact, updateContact);
+router.put("/:id", validateContactId, validateUpdateContact, updateContact);
 
 // Delete contact
-contactsRouter.delete("/:id", validateContactId, deleteContact); 
+router.delete("/:id", validateContactId, deleteContact);
+
+export default router; 

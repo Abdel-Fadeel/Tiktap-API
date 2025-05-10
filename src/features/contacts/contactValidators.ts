@@ -1,7 +1,7 @@
 import { body, param } from "express-validator";
-import { withValidationErrors } from "../middlewares/validationMiddleware.js";
-import Contact from "../features/contacts/contactModel.js";
-import { BadRequestError } from "../errors/customErrors.js";
+import { withValidationErrors } from "@/middlewares/validationMiddleware.js";
+import Contact from "./contactModel.js";
+import { BadRequestError } from "@/errors/customErrors.js";
 import mongoose from "mongoose";
 
 export const validateCreateContact = withValidationErrors([

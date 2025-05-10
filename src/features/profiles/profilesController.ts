@@ -4,7 +4,7 @@ import User from "../users/userModel.js";
 import { BadRequestError, NotFoundError } from "@/errors/customErrors.js";
 import { StatusCodes } from "http-status-codes";
 import { IRequest, IResponse } from "@/types/index.js";
-import { validateProfileExists } from "@/validators/profileValidators.js";
+import { validateProfileExists } from "./profileValidators.js";
 // import { deleteImage, uploadImage } from "../utils/uploadImgUtils.js";
 
 export const getProfiles = async (req: IRequest, res: IResponse) => {

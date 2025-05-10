@@ -8,7 +8,7 @@ import cors from "cors";
 import { authRouter } from "./features/authentication/authRouter.js";
 import profilesRouter from "./features/profiles/profilesRouter.js";
 import { groupsRouter } from "./features/groups/groupsRouter.js";
-import { contactsRouter } from "./features/contacts/contactsRouter.js";
+import contactsRouter from "./features/contacts/contactsRouter.js";
 import productsRouter from "./features/products/productsRouter.js";
 import { paymentsRouter } from "./features/payments/paymentsRouter.js";
 import { authMiddleware } from "./middlewares/authMiddleware.js";

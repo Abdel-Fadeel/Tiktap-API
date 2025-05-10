@@ -14,7 +14,7 @@ import {
   validateCreateProfile,
   validateDeleteLink,
   validateUpdateProfile,
-} from "@/validators/profileValidators.js";
+} from "./profileValidators.js";
 import { withValidationErrors } from "@/middlewares/validationMiddleware.js";
 import { authMiddleware } from "@/middlewares/authMiddleware.js";
 

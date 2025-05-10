@@ -9,11 +9,11 @@ import {
 } from "./authController.js";
 import {
   validateGoogleLogin,
-  validateUserLogin,
-  validateUserRegister,
+  validateLogin,
+  validateRegister,
   validateResetPassword,
   validateForgotPassword,
-} from "@/validators/userValidators.js";
+} from "../users/userValidators.js";
 
 // Rate Limiter
 const apiLimiter = rateLimiter({
@@ -25,10 +25,10 @@ const apiLimiter = rateLimiter({
 export const authRouter = express.Router();
 
 // Register
-authRouter.post("/register", apiLimiter, validateUserRegister, register);
+authRouter.post("/register", apiLimiter, validateRegister, register);
 
 // Login
-authRouter.post("/login", apiLimiter, validateUserLogin, login);
+authRouter.post("/login", apiLimiter, validateLogin, login);
 
 // Google Auth
 authRouter.post("/google", apiLimiter, validateGoogleLogin, googleLogin);

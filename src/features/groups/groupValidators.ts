@@ -1,20 +1,16 @@
 import { body, param } from "express-validator";
-import { withValidationErrors } from "../middlewares/validationMiddleware.js";
-import Group from "../features/groups/groupModel.js";
-import { BadRequestError } from "../errors/customErrors.js";
+import { withValidationErrors } from "@/middlewares/validationMiddleware.js";
+import Group from "./groupModel.js";
+import { BadRequestError } from "@/errors/customErrors.js";
 import mongoose from "mongoose";
 
 export const validateCreateGroup = withValidationErrors([
   body("name")
     .trim()
     .notEmpty()
-    .withMessage("Group name is required")
+    .withMessage("Name is required")
     .isLength({ min: 2, max: 50 })
-    .withMessage("Group name must be between 2 and 50 characters")
-    .custom(async (name: string, { req }) => {
-      const group = await Group.findOne({ name, userId: req.user?.id });
-      if (group) throw new BadRequestError("Group with this name already exists");
-    }),
+    .withMessage("Name must be between 2 and 50 characters"),
 
   body("description")
     .optional()
@@ -22,17 +18,29 @@ export const validateCreateGroup = withValidationErrors([
     .isLength({ max: 500 })
     .withMessage("Description cannot exceed 500 characters"),
 
+  body("note")
+    .optional()
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage("Note cannot exceed 500 characters"),
+
+  body("profileId")
+    .notEmpty()
+    .withMessage("Profile ID is required")
+    .custom((value: string) => {
+      if (!mongoose.Types.ObjectId.isValid(value)) {
+        throw new BadRequestError("Invalid Profile ID");
+      }
+      return true;
+    }),
+
   body("contacts")
     .optional()
     .isArray()
     .withMessage("Contacts must be an array")
-    .custom((contacts: string[]) => {
-      if (contacts) {
-        for (const contactId of contacts) {
-          if (!mongoose.Types.ObjectId.isValid(contactId)) {
-            throw new BadRequestError("Invalid Contact ID in contacts array");
-          }
-        }
+    .custom((value: string[]) => {
+      if (value && !value.every(id => mongoose.Types.ObjectId.isValid(id))) {
+        throw new BadRequestError("Invalid Contact ID in contacts array");
       }
       return true;
     }),
@@ -43,19 +51,7 @@ export const validateUpdateGroup = withValidationErrors([
     .optional()
     .trim()
     .isLength({ min: 2, max: 50 })
-    .withMessage("Group name must be between 2 and 50 characters")
-    .custom(async (name: string, { req }) => {
-      if (name && req.params?.id) {
-        const group = await Group.findOne({ 
-          name, 
-          userId: req.user?.id,
-          _id: { $ne: req.params.id }
-        });
-        if (group) {
-          throw new BadRequestError("Group with this name already exists");
-        }
-      }
-    }),
+    .withMessage("Name must be between 2 and 50 characters"),
 
   body("description")
     .optional()
@@ -63,17 +59,19 @@ export const validateUpdateGroup = withValidationErrors([
     .isLength({ max: 500 })
     .withMessage("Description cannot exceed 500 characters"),
 
+  body("note")
+    .optional()
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage("Note cannot exceed 500 characters"),
+
   body("contacts")
     .optional()
     .isArray()
     .withMessage("Contacts must be an array")
-    .custom((contacts: string[]) => {
-      if (contacts) {
-        for (const contactId of contacts) {
-          if (!mongoose.Types.ObjectId.isValid(contactId)) {
-            throw new BadRequestError("Invalid Contact ID in contacts array");
-          }
-        }
+    .custom((value: string[]) => {
+      if (value && !value.every(id => mongoose.Types.ObjectId.isValid(id))) {
+        throw new BadRequestError("Invalid Contact ID in contacts array");
       }
       return true;
     }),
@@ -86,22 +84,6 @@ export const validateGroupId = withValidationErrors([
     .custom((value: string) => {
       if (!mongoose.Types.ObjectId.isValid(value)) {
         throw new BadRequestError("Invalid Group ID");
-      }
-      return true;
-    }),
-]);
-
-export const validateAddContactsToGroup = withValidationErrors([
-  body("contacts")
-    .isArray()
-    .withMessage("Contacts must be an array")
-    .notEmpty()
-    .withMessage("At least one contact is required")
-    .custom((contacts: string[]) => {
-      for (const contactId of contacts) {
-        if (!mongoose.Types.ObjectId.isValid(contactId)) {
-          throw new BadRequestError("Invalid Contact ID in contacts array");
-        }
       }
       return true;
     }),

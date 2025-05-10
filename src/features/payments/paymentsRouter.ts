@@ -3,7 +3,7 @@ import {
   validateCreatePayment,
   validatePaymentId,
   validateRefundPayment,
-} from "@/validators/paymentValidators.js";
+} from "./paymentValidators.js";
 import { 
   createPayment, 
   handlePaymentCallback,

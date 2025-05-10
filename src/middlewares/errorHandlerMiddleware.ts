@@ -43,17 +43,18 @@ const errorHandlerMiddleware = (
   if (err.name === "MongoServerError" && err.code === 11000) {
     const field = Object.keys(err.keyValue || {})[0];
     const value = err.keyValue?.[field];
-    return res.status(StatusCodes.BAD_REQUEST).json({
+    res.status(StatusCodes.BAD_REQUEST).json({
       message: `${field} '${value}' already exists!`,
       status: false
     });
+    return;
   }
 
   // Handle other errors
   const statusCode = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR;
   const message = err.message || "Something went wrong, please try again.";
 
-  return res.status(statusCode).json({
+  res.status(statusCode).json({
     message,
     status: false
   });
