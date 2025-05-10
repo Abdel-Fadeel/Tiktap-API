@@ -89,6 +89,15 @@ export const updateProfile = async (req: IRequest, res: IResponse) => {
 
 export const deleteProfile = async (req: IRequest, res: IResponse) => {
   const profile = await validateProfileExists(req);
+  
+  // Delete profile photo if exists
+  if (profile.photo) {
+    const photoPath = path.join(process.cwd(), profile.photo);
+    if (fs.existsSync(photoPath)) {
+      fs.unlinkSync(photoPath);
+    }
+  }
+
   await profile.deleteOne();
 
   res
