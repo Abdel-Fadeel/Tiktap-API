@@ -1,16 +1,16 @@
-import { body } from "express-validator";
+import { body, param } from "express-validator";
 import { withValidationErrors } from "../middlewares/validationMiddleware.js";
 import Contact from "../features/contacts/contactModel.js";
 import { BadRequestError } from "../errors/customErrors.js";
 import mongoose from "mongoose";
 
 export const validateCreateContact = withValidationErrors([
-  body("name")
+  body("fullName")
     .trim()
     .notEmpty()
-    .withMessage("Name is required")
+    .withMessage("Full name is required")
     .isLength({ min: 2, max: 50 })
-    .withMessage("Name must be between 2 and 50 characters"),
+    .withMessage("Full name must be between 2 and 50 characters"),
 
   body("email")
     .trim()
@@ -18,9 +18,12 @@ export const validateCreateContact = withValidationErrors([
     .withMessage("Email is required")
     .isEmail()
     .withMessage("Invalid email format")
-    .custom(async (email: string) => {
-      const contact = await Contact.findOne({ email });
-      if (contact) throw new BadRequestError("Contact with this email already exists");
+    .custom(async (email: string, { req }) => {
+      const contact = await Contact.findOne({ 
+        email, 
+        profileId: req.body.profileId 
+      });
+      if (contact) throw new BadRequestError("Contact with this email already exists in this profile");
     }),
 
   body("phoneNumber")
@@ -30,27 +33,35 @@ export const validateCreateContact = withValidationErrors([
     .matches(/^(\+966|0)?5\d{8}$/)
     .withMessage("Phone number must be a valid Saudi number"),
 
-  body("group")
-    .optional()
+  body("profileId")
+    .notEmpty()
+    .withMessage("Profile ID is required")
     .custom((value: string) => {
-      if (value && !mongoose.Types.ObjectId.isValid(value)) {
-        throw new BadRequestError("Invalid Group ID");
+      if (!mongoose.Types.ObjectId.isValid(value)) {
+        throw new BadRequestError("Invalid Profile ID");
       }
       return true;
     }),
 
-  body("notes")
+  body("title")
     .optional()
+    .trim()
+    .isLength({ max: 50 })
+    .withMessage("Title cannot exceed 50 characters"),
+
+  body("note")
+    .optional()
+    .trim()
     .isLength({ max: 500 })
-    .withMessage("Notes cannot exceed 500 characters"),
+    .withMessage("Note cannot exceed 500 characters"),
 ]);
 
 export const validateUpdateContact = withValidationErrors([
-  body("name")
+  body("fullName")
     .optional()
     .trim()
     .isLength({ min: 2, max: 50 })
-    .withMessage("Name must be between 2 and 50 characters"),
+    .withMessage("Full name must be between 2 and 50 characters"),
 
   body("email")
     .optional()
@@ -59,9 +70,13 @@ export const validateUpdateContact = withValidationErrors([
     .withMessage("Invalid email format")
     .custom(async (email: string, { req }) => {
       if (email && req.params?.id) {
-        const contact = await Contact.findOne({ email });
-        if (contact && contact._id.toString() !== req.params.id) {
-          throw new BadRequestError("Contact with this email already exists");
+        const contact = await Contact.findOne({ 
+          email, 
+          profileId: req.body.profileId,
+          _id: { $ne: req.params.id }
+        });
+        if (contact) {
+          throw new BadRequestError("Contact with this email already exists in this profile");
         }
       }
     }),
@@ -72,23 +87,21 @@ export const validateUpdateContact = withValidationErrors([
     .matches(/^(\+966|0)?5\d{8}$/)
     .withMessage("Phone number must be a valid Saudi number"),
 
-  body("group")
+  body("title")
     .optional()
-    .custom((value: string) => {
-      if (value && !mongoose.Types.ObjectId.isValid(value)) {
-        throw new BadRequestError("Invalid Group ID");
-      }
-      return true;
-    }),
+    .trim()
+    .isLength({ max: 50 })
+    .withMessage("Title cannot exceed 50 characters"),
 
-  body("notes")
+  body("note")
     .optional()
+    .trim()
     .isLength({ max: 500 })
-    .withMessage("Notes cannot exceed 500 characters"),
+    .withMessage("Note cannot exceed 500 characters"),
 ]);
 
 export const validateContactId = withValidationErrors([
-  body("contactId")
+  param("id")
     .notEmpty()
     .withMessage("Contact ID is required")
     .custom((value: string) => {

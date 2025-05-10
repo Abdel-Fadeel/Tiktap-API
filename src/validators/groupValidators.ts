@@ -1,4 +1,4 @@
-import { body } from "express-validator";
+import { body, param } from "express-validator";
 import { withValidationErrors } from "../middlewares/validationMiddleware.js";
 import Group from "../features/groups/groupModel.js";
 import { BadRequestError } from "../errors/customErrors.js";
@@ -11,8 +11,8 @@ export const validateCreateGroup = withValidationErrors([
     .withMessage("Group name is required")
     .isLength({ min: 2, max: 50 })
     .withMessage("Group name must be between 2 and 50 characters")
-    .custom(async (name: string) => {
-      const group = await Group.findOne({ name });
+    .custom(async (name: string, { req }) => {
+      const group = await Group.findOne({ name, userId: req.user?.id });
       if (group) throw new BadRequestError("Group with this name already exists");
     }),
 
@@ -46,8 +46,12 @@ export const validateUpdateGroup = withValidationErrors([
     .withMessage("Group name must be between 2 and 50 characters")
     .custom(async (name: string, { req }) => {
       if (name && req.params?.id) {
-        const group = await Group.findOne({ name });
-        if (group && group._id.toString() !== req.params.id) {
+        const group = await Group.findOne({ 
+          name, 
+          userId: req.user?.id,
+          _id: { $ne: req.params.id }
+        });
+        if (group) {
           throw new BadRequestError("Group with this name already exists");
         }
       }
@@ -76,7 +80,7 @@ export const validateUpdateGroup = withValidationErrors([
 ]);
 
 export const validateGroupId = withValidationErrors([
-  body("groupId")
+  param("id")
     .notEmpty()
     .withMessage("Group ID is required")
     .custom((value: string) => {
@@ -98,6 +102,50 @@ export const validateAddContactsToGroup = withValidationErrors([
         if (!mongoose.Types.ObjectId.isValid(contactId)) {
           throw new BadRequestError("Invalid Contact ID in contacts array");
         }
+      }
+      return true;
+    }),
+]);
+
+export const validateAddContactToGroup = withValidationErrors([
+  body("groupId")
+    .notEmpty()
+    .withMessage("Group ID is required")
+    .custom((value: string) => {
+      if (!mongoose.Types.ObjectId.isValid(value)) {
+        throw new BadRequestError("Invalid Group ID");
+      }
+      return true;
+    }),
+
+  body("contactId")
+    .notEmpty()
+    .withMessage("Contact ID is required")
+    .custom((value: string) => {
+      if (!mongoose.Types.ObjectId.isValid(value)) {
+        throw new BadRequestError("Invalid Contact ID");
+      }
+      return true;
+    }),
+]);
+
+export const validateRemoveContactFromGroup = withValidationErrors([
+  body("groupId")
+    .notEmpty()
+    .withMessage("Group ID is required")
+    .custom((value: string) => {
+      if (!mongoose.Types.ObjectId.isValid(value)) {
+        throw new BadRequestError("Invalid Group ID");
+      }
+      return true;
+    }),
+
+  body("contactId")
+    .notEmpty()
+    .withMessage("Contact ID is required")
+    .custom((value: string) => {
+      if (!mongoose.Types.ObjectId.isValid(value)) {
+        throw new BadRequestError("Invalid Contact ID");
       }
       return true;
     }),

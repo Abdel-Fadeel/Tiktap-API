@@ -83,7 +83,10 @@ export interface IContact extends Document {
   title?: string;
   note?: string;
   profileId: Types.ObjectId;
-  userId?: Types.ObjectId;
+  userId: Types.ObjectId;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface IRequest extends Request {

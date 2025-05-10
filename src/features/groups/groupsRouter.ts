@@ -3,7 +3,8 @@ import {
   validateCreateGroup,
   validateUpdateGroup,
   validateGroupId,
-  validateAddContactsToGroup,
+  validateAddContactToGroup,
+  validateRemoveContactFromGroup,
 } from "@/validators/groupValidators.js";
 import {
   getGroups,
@@ -20,11 +21,11 @@ export const groupsRouter = express.Router();
 // Get all groups
 groupsRouter.get("/", getGroups);
 
-// Create new group
-groupsRouter.post("/", validateCreateGroup, createGroup);
-
 // Get single group
 groupsRouter.get("/:id", validateGroupId, getGroupById);
+
+// Create group
+groupsRouter.post("/", validateCreateGroup, createGroup);
 
 // Update group
 groupsRouter.put("/:id", validateGroupId, validateUpdateGroup, updateGroup);
@@ -33,7 +34,7 @@ groupsRouter.put("/:id", validateGroupId, validateUpdateGroup, updateGroup);
 groupsRouter.delete("/:id", validateGroupId, deleteGroup);
 
 // Add contact to group
-groupsRouter.post("/addContact", validateAddContactsToGroup, addContactToGroup);
+groupsRouter.post("/addContact", validateAddContactToGroup, addContactToGroup);
 
 // Remove contact from group
-groupsRouter.post("/removeContact", validateAddContactsToGroup, removeContactFromGroup); 
+groupsRouter.post("/removeContact", validateRemoveContactFromGroup, removeContactFromGroup); 
