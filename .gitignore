@@ -3,3 +3,5 @@ dist
 .env
 .idea
 uploads
+/API_DOCUMENTATION.md
+/tiktap-api.postman_collection.json

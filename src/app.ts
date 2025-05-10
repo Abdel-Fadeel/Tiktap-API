@@ -14,6 +14,7 @@ import { paymentsRouter } from "./features/payments/paymentsRouter.js";
 import { authMiddleware } from "./middlewares/authMiddleware.js";
 import errorHandlerMiddleware from "./middlewares/errorHandlerMiddleware.js";
 import { Request, Response, NextFunction } from "express";
+import nfcRouter from "./features/nfc/nfcRouter.js";
 
 // Access .env files
 dotenv.config();
@@ -50,6 +51,7 @@ app.use(`${BASE_API_URL}/groups`, authMiddleware, groupsRouter);
 app.use(`${BASE_API_URL}/contacts`, authMiddleware, contactsRouter);
 app.use(`${BASE_API_URL}/products`, authMiddleware, productsRouter);
 app.use(`${BASE_API_URL}/payments`, paymentsRouter);
+app.use(`${BASE_API_URL}/nfc`, nfcRouter);
 
 // NOT FOUND Handler
 app.use("*", (req: Request, res: Response, next: NextFunction) => {
