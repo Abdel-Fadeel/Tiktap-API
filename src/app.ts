@@ -38,6 +38,11 @@ app.use(
 
 const BASE_API_URL = "/api/v1";
 
+// Health check endpoint
+app.get("/api/v1/health", (req: Request, res: Response) => {
+  res.status(200).json({ status: "ok" });
+});
+
 // Routers
 app.use(`${BASE_API_URL}/auth`, authRouter);
 app.use(`${BASE_API_URL}/profiles`, authMiddleware, profilesRouter);
