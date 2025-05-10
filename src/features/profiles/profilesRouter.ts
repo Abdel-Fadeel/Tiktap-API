@@ -17,6 +17,7 @@ import {
 } from "./profileValidators.js";
 import { withValidationErrors } from "@/middlewares/validationMiddleware.js";
 import { authMiddleware } from "@/middlewares/authMiddleware.js";
+import { upload } from "@/utils/uploadUtils.js";
 
 const router = Router();
 
@@ -28,7 +29,13 @@ router
 router
   .route("/:id")
   .get(authMiddleware, getProfileById)
-  .put(authMiddleware, validateUpdateProfile, withValidationErrors(validateUpdateProfile), updateProfile)
+  .put(
+    authMiddleware, 
+    upload.single("photo"), 
+    validateUpdateProfile, 
+    withValidationErrors(validateUpdateProfile), 
+    updateProfile
+  )
   .delete(authMiddleware, deleteProfile);
 
 router.post("/addLink", authMiddleware, validateAddUpdateLink, withValidationErrors(validateAddUpdateLink), addLink);

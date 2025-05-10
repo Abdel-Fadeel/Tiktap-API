@@ -5,6 +5,8 @@ import { BadRequestError, NotFoundError } from "@/errors/customErrors.js";
 import { StatusCodes } from "http-status-codes";
 import { IRequest, IResponse } from "@/types/index.js";
 import { validateProfileExists } from "./profileValidators.js";
+import path from "path";
+import fs from "fs";
 // import { deleteImage, uploadImage } from "../utils/uploadImgUtils.js";
 
 export const getProfiles = async (req: IRequest, res: IResponse) => {
@@ -66,6 +68,16 @@ export const updateProfile = async (req: IRequest, res: IResponse) => {
   if (username) profile.username = username;
   if (phoneNumber) profile.phoneNumber = phoneNumber;
   if (title) profile.title = title;
+  if (req.file) {
+    // Delete old photo if exists
+    if (profile.photo) {
+      const oldPhotoPath = path.join(process.cwd(), profile.photo);
+      if (fs.existsSync(oldPhotoPath)) {
+        fs.unlinkSync(oldPhotoPath);
+      }
+    }
+    profile.photo = `/uploads/${req.file.filename}`;
+  }
   profile.email = email;
 
   await profile.save();
