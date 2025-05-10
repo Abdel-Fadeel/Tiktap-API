@@ -12,6 +12,7 @@ import {
   deleteContact,
 } from "./contactsController.js";
 import { authMiddleware } from "@/middlewares/authMiddleware.js";
+import { upload } from "@/utils/uploadUtils.js";
 
 const router = express.Router();
 
@@ -21,13 +22,13 @@ router.use(authMiddleware);
 router.get("/", getContacts);
 
 // Create new contact
-router.post("/", validateCreateContact, createContact);
+router.post("/", upload.single("photo"), validateCreateContact, createContact);
 
 // Get single contact
 router.get("/:id", validateContactId, getContactById);
 
 // Update contact
-router.put("/:id", validateContactId, validateUpdateContact, updateContact);
+router.put("/:id", upload.single("photo"), validateContactId, validateUpdateContact, updateContact);
 
 // Delete contact
 router.delete("/:id", validateContactId, deleteContact);

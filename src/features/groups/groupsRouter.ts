@@ -15,6 +15,7 @@ import {
   addContactToGroup,
   removeContactFromGroup,
 } from "./groupsController.js";
+import { upload } from "@/utils/uploadUtils.js";
 
 export const groupsRouter = express.Router();
 
@@ -25,10 +26,10 @@ groupsRouter.get("/", getGroups);
 groupsRouter.get("/:id", validateGroupId, getGroupById);
 
 // Create group
-groupsRouter.post("/", validateCreateGroup, createGroup);
+groupsRouter.post("/", upload.single("photo"), validateCreateGroup, createGroup);
 
 // Update group
-groupsRouter.put("/:id", validateGroupId, validateUpdateGroup, updateGroup);
+groupsRouter.put("/:id", upload.single("photo"), validateGroupId, validateUpdateGroup, updateGroup);
 
 // Delete group
 groupsRouter.delete("/:id", validateGroupId, deleteGroup);

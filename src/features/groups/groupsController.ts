@@ -5,6 +5,8 @@ import Contact from "../contacts/contactModel.js";
 import { StatusCodes } from "http-status-codes";
 import { BadRequestError } from "@/errors/customErrors.js";
 import { IRequest, IResponse } from "@/types/index.js";
+import path from "path";
+import fs from "fs";
 
 // Get all groups
 export const getGroups = async (req: IRequest, res: IResponse) => {
@@ -47,183 +49,70 @@ export const getGroupById = async (req: IRequest, res: IResponse) => {
 
 // Create a new group
 export const createGroup = async (req: IRequest, res: IResponse) => {
-  const { name, description, note, picture, contacts, profileId } = req.body;
+  const { name, description, profileId } = req.body;
   const userId = req.user?.id;
 
-  if (!userId) throw new BadRequestError("User ID is required");
-  if (!profileId) throw new BadRequestError("Profile ID is required");
+  const profile = await Profile.findOne({ _id: profileId, userId });
+  if (!profile) throw new BadRequestError("Profile not found!");
 
-  const session = await mongoose.startSession();
+  const group = await Group.create({
+    name,
+    description,
+    profileId,
+    userId,
+    photo: req.file ? `/uploads/${req.file.filename}` : undefined,
+  });
 
-  try {
-    session.startTransaction();
-
-    // Check if profile exists and belongs to user
-    const profile = await Profile.findOne({ 
-      _id: profileId, 
-      userId 
-    }).session(session);
-
-    if (!profile) throw new BadRequestError("Profile not found");
-
-    // Check if group name already exists for this user
-    const existingGroup = await Group.findOne({ 
-      name, 
-      userId 
-    }).session(session);
-
-    if (existingGroup) throw new BadRequestError("Group with this name already exists");
-
-    const group = new Group({
-      name,
-      description,
-      note,
-      picture,
-      contacts,
-      profileId,
-      userId,
-    });
-
-    await group.save({ session });
-
-    profile.groups.push(group._id);
-    await profile.save({ session });
-
-    await session.commitTransaction();
-    session.endSession();
-
-    res.status(StatusCodes.CREATED).json({
-      status: true,
-      message: "Group created successfully",
-      data: group,
-    });
-  } catch (err) {
-    await session.abortTransaction();
-    session.endSession();
-    throw err;
-  }
+  res.status(StatusCodes.CREATED).json({ status: true, data: group });
 };
 
 // Update a group
 export const updateGroup = async (req: IRequest, res: IResponse) => {
-  const { name, description, note, picture, contacts } = req.body;
-  const { id } = req.params;
+  const { name, description } = req.body;
   const userId = req.user?.id;
+  const { id } = req.params;
 
-  if (!userId) throw new BadRequestError("User ID is required");
+  const group = await Group.findOne({ _id: id, userId });
+  if (!group) throw new BadRequestError("Group not found!");
 
-  const session = await mongoose.startSession();
-
-  try {
-    session.startTransaction();
-
-    // Check if group exists and belongs to user
-    const group = await Group.findOne({ 
-      _id: id, 
-      userId, 
-      isActive: true 
-    }).session(session);
-
-    if (!group) throw new BadRequestError("Group not found");
-
-    // If name is being updated, check for uniqueness
-    if (name && name !== group.name) {
-      const existingGroup = await Group.findOne({ 
-        name, 
-        userId,
-        _id: { $ne: id }
-      }).session(session);
-
-      if (existingGroup) throw new BadRequestError("Group with this name already exists");
-    }
-
-    const updates: Partial<{
-      name: string;
-      description: string;
-      note: string;
-      picture: string;
-      contacts: mongoose.Types.ObjectId[];
-    }> = { 
-      name, 
-      description, 
-      note, 
-      picture, 
-      contacts 
-    };
-
-    // Remove undefined values
-    Object.keys(updates).forEach(key => {
-      if (updates[key as keyof typeof updates] === undefined) {
-        delete updates[key as keyof typeof updates];
+  // Update fields
+  if (name) group.name = name;
+  if (description) group.description = description;
+  if (req.file) {
+    // Delete old photo if exists
+    if (group.photo) {
+      const oldPhotoPath = path.join(process.cwd(), group.photo);
+      if (fs.existsSync(oldPhotoPath)) {
+        fs.unlinkSync(oldPhotoPath);
       }
-    });
-
-    const updatedGroup = await Group.findOneAndUpdate(
-      { _id: id, userId },
-      updates,
-      { new: true, session }
-    );
-
-    await session.commitTransaction();
-    session.endSession();
-
-    res.status(StatusCodes.OK).json({
-      status: true,
-      message: "Group updated successfully",
-      data: updatedGroup,
-    });
-  } catch (err) {
-    await session.abortTransaction();
-    session.endSession();
-    throw err;
+    }
+    group.photo = `/uploads/${req.file.filename}`;
   }
+
+  await group.save();
+
+  res.status(StatusCodes.OK).json({ status: true, data: group });
 };
 
 // Delete a group (soft delete)
 export const deleteGroup = async (req: IRequest, res: IResponse) => {
-  const { id } = req.params;
   const userId = req.user?.id;
+  const { id } = req.params;
 
-  if (!userId) throw new BadRequestError("User ID is required");
+  const group = await Group.findOne({ _id: id, userId });
+  if (!group) throw new BadRequestError("Group not found!");
 
-  const session = await mongoose.startSession();
-
-  try {
-    session.startTransaction();
-
-    const group = await Group.findOne({ 
-      _id: id, 
-      userId, 
-      isActive: true 
-    }).session(session);
-
-    if (!group) throw new BadRequestError("Group not found");
-
-    // Soft delete the group
-    group.isActive = false;
-    await group.save({ session });
-
-    // Remove group from profile
-    const profile = await Profile.findById(group.profileId).session(session);
-    if (profile) {
-      profile.groups = profile.groups.filter(
-        (groupId) => groupId.toString() !== group._id.toString()
-      );
-      await profile.save({ session });
+  // Delete group photo if exists
+  if (group.photo) {
+    const photoPath = path.join(process.cwd(), group.photo);
+    if (fs.existsSync(photoPath)) {
+      fs.unlinkSync(photoPath);
     }
-
-    await session.commitTransaction();
-    session.endSession();
-
-    res.status(StatusCodes.OK).json({
-      status: true,
-      message: "Group deleted successfully",
-    });
-  } catch (err) {
-    await session.abortTransaction();
-    session.endSession();
-    throw err;
   }
+
+  await group.deleteOne();
+
+  res.status(StatusCodes.OK).json({ status: true, message: "Group deleted successfully" });
 };
 
 // Add a contact to a group

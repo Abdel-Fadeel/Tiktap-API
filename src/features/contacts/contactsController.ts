@@ -4,6 +4,8 @@ import Profile from "../profiles/profileModel.js";
 import { StatusCodes } from "http-status-codes";
 import { BadRequestError } from "@/errors/customErrors.js";
 import { IRequest, IResponse } from "@/types/index.js";
+import path from "path";
+import fs from "fs";
 
 // Get all contacts
 export const getContacts = async (req: IRequest, res: IResponse) => {
@@ -48,182 +50,75 @@ export const getContactById = async (req: IRequest, res: IResponse) => {
 
 // Create a new contact
 export const createContact = async (req: IRequest, res: IResponse) => {
-  const { fullName, phoneNumber, note, email, title, profileId } = req.body;
+  const { fullName, phoneNumber, email, title, note } = req.body;
   const userId = req.user?.id;
+  const profileId = req.body.profileId;
 
-  if (!userId) throw new BadRequestError("User ID is required");
-  if (!profileId) throw new BadRequestError("Profile ID is required");
+  const profile = await Profile.findOne({ _id: profileId, userId });
+  if (!profile) throw new BadRequestError("Profile not found!");
 
-  const session = await mongoose.startSession();
+  const contact = await Contact.create({
+    fullName,
+    phoneNumber,
+    email,
+    title,
+    note,
+    profileId,
+    userId,
+    photo: req.file ? `/uploads/${req.file.filename}` : undefined,
+  });
 
-  try {
-    session.startTransaction();
-
-    // Check if profile exists and belongs to user
-    const profile = await Profile.findOne({ 
-      _id: profileId, 
-      userId 
-    }).session(session);
-
-    if (!profile) throw new BadRequestError("Profile not found");
-
-    // Check if contact with same email already exists for this profile
-    const existingContact = await Contact.findOne({ 
-      email, 
-      profileId 
-    }).session(session);
-
-    if (existingContact) throw new BadRequestError("Contact with this email already exists in this profile");
-
-    const contact = new Contact({
-      fullName,
-      phoneNumber,
-      note,
-      email,
-      title,
-      profileId,
-      userId,
-      isActive: true
-    });
-
-    await contact.save({ session });
-
-    profile.contacts.push(contact._id);
-    await profile.save({ session });
-
-    await session.commitTransaction();
-    session.endSession();
-
-    res.status(StatusCodes.CREATED).json({
-      status: true,
-      message: "Contact created successfully",
-      data: contact,
-    });
-  } catch (err) {
-    await session.abortTransaction();
-    session.endSession();
-    throw err;
-  }
+  res.status(StatusCodes.CREATED).json({ status: true, data: contact });
 };
 
 // Update a contact
 export const updateContact = async (req: IRequest, res: IResponse) => {
-  const { fullName, phoneNumber, note, email, title } = req.body;
-  const { id } = req.params;
+  const { fullName, phoneNumber, email, title, note } = req.body;
   const userId = req.user?.id;
+  const { id } = req.params;
 
-  if (!userId) throw new BadRequestError("User ID is required");
+  const contact = await Contact.findOne({ _id: id, userId });
+  if (!contact) throw new BadRequestError("Contact not found!");
 
-  const session = await mongoose.startSession();
-
-  try {
-    session.startTransaction();
-
-    // Check if contact exists and belongs to user
-    const contact = await Contact.findOne({ 
-      _id: id, 
-      userId, 
-      isActive: true 
-    }).session(session);
-
-    if (!contact) throw new BadRequestError("Contact not found");
-
-    // If email is being updated, check for uniqueness within the same profile
-    if (email && email !== contact.email) {
-      const existingContact = await Contact.findOne({ 
-        email, 
-        profileId: contact.profileId,
-        _id: { $ne: id }
-      }).session(session);
-
-      if (existingContact) throw new BadRequestError("Contact with this email already exists in this profile");
-    }
-
-    const updates: Partial<{
-      fullName: string;
-      phoneNumber: string;
-      note: string;
-      email: string;
-      title: string;
-    }> = { 
-      fullName, 
-      phoneNumber, 
-      note, 
-      email, 
-      title 
-    };
-
-    // Remove undefined values
-    Object.keys(updates).forEach(key => {
-      if (updates[key as keyof typeof updates] === undefined) {
-        delete updates[key as keyof typeof updates];
+  // Update fields
+  if (fullName) contact.fullName = fullName;
+  if (phoneNumber) contact.phoneNumber = phoneNumber;
+  if (email) contact.email = email;
+  if (title) contact.title = title;
+  if (note) contact.note = note;
+  if (req.file) {
+    // Delete old photo if exists
+    if (contact.photo) {
+      const oldPhotoPath = path.join(process.cwd(), contact.photo);
+      if (fs.existsSync(oldPhotoPath)) {
+        fs.unlinkSync(oldPhotoPath);
       }
-    });
-
-    const updatedContact = await Contact.findOneAndUpdate(
-      { _id: id, userId },
-      updates,
-      { new: true, session }
-    );
-
-    await session.commitTransaction();
-    session.endSession();
-
-    res.status(StatusCodes.OK).json({
-      status: true,
-      message: "Contact updated successfully",
-      data: updatedContact,
-    });
-  } catch (err) {
-    await session.abortTransaction();
-    session.endSession();
-    throw err;
+    }
+    contact.photo = `/uploads/${req.file.filename}`;
   }
+
+  await contact.save();
+
+  res.status(StatusCodes.OK).json({ status: true, data: contact });
 };
 
 // Delete a contact (soft delete)
 export const deleteContact = async (req: IRequest, res: IResponse) => {
-  const { id } = req.params;
   const userId = req.user?.id;
+  const { id } = req.params;
 
-  if (!userId) throw new BadRequestError("User ID is required");
+  const contact = await Contact.findOne({ _id: id, userId });
+  if (!contact) throw new BadRequestError("Contact not found!");
 
-  const session = await mongoose.startSession();
-
-  try {
-    session.startTransaction();
-
-    const contact = await Contact.findOne({ 
-      _id: id, 
-      userId, 
-      isActive: true 
-    }).session(session);
-
-    if (!contact) throw new BadRequestError("Contact not found");
-
-    // Soft delete the contact
-    contact.isActive = false;
-    await contact.save({ session });
-
-    // Remove contact from profile
-    const profile = await Profile.findById(contact.profileId).session(session);
-    if (profile) {
-      profile.contacts = profile.contacts.filter(
-        (contactId) => contactId.toString() !== contact._id.toString()
-      );
-      await profile.save({ session });
+  // Delete contact photo if exists
+  if (contact.photo) {
+    const photoPath = path.join(process.cwd(), contact.photo);
+    if (fs.existsSync(photoPath)) {
+      fs.unlinkSync(photoPath);
     }
-
-    await session.commitTransaction();
-    session.endSession();
-
-    res.status(StatusCodes.OK).json({
-      status: true,
-      message: "Contact deleted successfully",
-    });
-  } catch (err) {
-    await session.abortTransaction();
-    session.endSession();
-    throw err;
   }
+
+  await contact.deleteOne();
+
+  res.status(StatusCodes.OK).json({ status: true, message: "Contact deleted successfully" });
 }; 

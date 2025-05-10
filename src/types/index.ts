@@ -68,7 +68,7 @@ export interface IGroup extends Document {
   name: string;
   description?: string;
   note?: string;
-  picture?: string;
+  photo?: string;
   contacts: Types.ObjectId[];
   profileId: Types.ObjectId;
   userId?: Types.ObjectId;
@@ -79,9 +79,10 @@ export interface IContact extends Document {
   _id: Types.ObjectId;
   fullName: string;
   phoneNumber: string;
-  email: string;
+  email?: string;
   title?: string;
   note?: string;
+  photo?: string;
   profileId: Types.ObjectId;
   userId: Types.ObjectId;
   isActive: boolean;

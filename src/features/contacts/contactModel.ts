@@ -28,6 +28,9 @@ const ContactSchema = new mongoose.Schema<IContact>({
     type: String,
     trim: true,
   },
+  photo: {
+    type: String,
+  },
   profileId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Profile",

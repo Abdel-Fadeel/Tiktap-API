@@ -18,7 +18,7 @@ const GroupSchema = new mongoose.Schema<IGroup>({
     type: String,
     trim: true,
   },
-  picture: {
+  photo: {
     type: String,
   },
   contacts: [
