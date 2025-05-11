@@ -1,32 +1,27 @@
-import mongoose, { Document, Types } from "mongoose";
-import { IUser } from "@/types/index.js";
+import mongoose, { Document } from "mongoose";
 
-export interface INfcCard extends Document {
+export interface INFC extends Document {
   cardId: string;
-  userId: Types.ObjectId;
-  profileIds: Types.ObjectId[];
+  status: "active" | "inactive";
   isActive: boolean;
   lastUsed?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
 
-const nfcCardSchema = new mongoose.Schema(
+const nfcSchema = new mongoose.Schema(
   {
     cardId: {
       type: String,
       required: [true, "Card ID is required"],
       unique: true,
+      trim: true,
     },
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: [true, "User ID is required"],
+    status: {
+      type: String,
+      enum: ["active", "inactive"],
+      default: "active",
     },
-    profileIds: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Profile",
-    }],
     isActive: {
       type: Boolean,
       default: true,
@@ -38,4 +33,4 @@ const nfcCardSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<INfcCard>("NfcCard", nfcCardSchema); 
+export default mongoose.model<INFC>("NFC", nfcSchema); 

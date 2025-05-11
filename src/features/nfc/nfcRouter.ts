@@ -1,23 +1,12 @@
 import express from "express";
-import {
-  registerCard,
-  handleCardScan,
-  getUserCards,
-  deactivateCard,
-  updateCardProfiles,
-} from "./nfcController.js";
+import { registerCard } from "./nfcController.js";
 import { authMiddleware } from "@/middlewares/authMiddleware.js";
+import { checkAdmin } from "../../middlewares/checkAdminMiddleware.js";
 
 const router = express.Router();
 
-// Public endpoint for card scanning
-router.post("/scan", handleCardScan);
-
 // Protected endpoints
 router.use(authMiddleware);
-router.post("/register", registerCard);
-router.get("/cards", getUserCards);
-router.delete("/cards/:cardId", deactivateCard);
-router.put("/cards/:cardId/profiles", updateCardProfiles);
+router.post("/register", checkAdmin, registerCard);
 
 export default router; 
