@@ -94,7 +94,12 @@ export interface IContact extends Document {
 }
 
 export interface IRequest extends Request {
-  user?: IUser;
+  user?: {
+    id: string,
+    email: string
+    isAdmin?: boolean,
+  }
+  ;
   file?: Express.Multer.File;
 }
 

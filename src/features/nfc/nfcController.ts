@@ -6,6 +6,7 @@ import NFC from "./nfcModel.js";
 // Register a new NFC card
 export const registerCard = async (req: IRequest, res: IResponse) => {
   const { cardId } = req.body;
+  console.log(req.user)
 
   if (!cardId) {
     throw new BadRequestError("Card ID is required");
