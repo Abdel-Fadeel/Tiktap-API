@@ -6,14 +6,14 @@ import Payment from "./paymentModel.js";
 import { IRequest, IResponse, IPayment } from "@/types/index.js";
 
 export const createPayment = async (req: IRequest, res: IResponse) => {
-  const userId = req.user?.id;
   const { productId } = req.body;
+  const userId = req.user?.id;
 
   // Fetch the product details
-  const product = await Product.findOne({ _id: productId });
+  const product = await Product.findById(productId);
   if (!product) throw new BadRequestError("Product not found!");
 
-  const user = await User.findOne({ _id: userId });
+  const user = await User.findById(userId);
   if (!user) throw new BadRequestError("User not found!");
 
   if (product.price < 1)
@@ -37,19 +37,20 @@ export const createPayment = async (req: IRequest, res: IResponse) => {
 
   const paymentResponse = await response.json();
 
-  const paymentData = {
+  const payment = await Payment.create({
     userId,
     productId,
     amount: product.price * 100,
     currency: "SAR",
     description: product.name,
-    status: "initiated" as const,
+    status: "initiated",
     invoiceId: paymentResponse.id,
-  };
+  });
 
-  await Payment.create(paymentData);
-
-  res.status(StatusCodes.CREATED).json({ status: true, paymentUrl: paymentResponse.url });
+  res.status(StatusCodes.CREATED).json({ 
+    status: true, 
+    paymentUrl: paymentResponse.url 
+  });
 };
 
 export const handlePaymentCallback = async (req: IRequest, res: IResponse) => {

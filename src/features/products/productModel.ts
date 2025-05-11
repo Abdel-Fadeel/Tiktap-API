@@ -1,21 +1,44 @@
-import mongoose from "mongoose";
-import { IProduct } from "@/types/index.js";
+import mongoose, { Document } from "mongoose";
 
-const ProductSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  image: {
-    type: String,
-    required: true,
-  },
-  price: {
-    type: Number,
-    required: true,
-  },
-});
+export interface IProduct extends Document {
+  name: string;
+  price: number;
+  description?: string;
+  image: string;
+  createdBy: mongoose.Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
-const Product = mongoose.model<IProduct>("Product", ProductSchema);
+const productSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "Product name is required"],
+      trim: true,
+      minlength: [2, "Name must be at least 2 characters"],
+      maxlength: [50, "Name cannot exceed 50 characters"],
+    },
+    price: {
+      type: Number,
+      required: [true, "Product price is required"],
+      min: [0, "Price cannot be negative"],
+    },
+    description: {
+      type: String,
+      trim: true,
+    },
+    image: {
+      type: String,
+      required: [true, "Product image is required"],
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "Creator ID is required"],
+    },
+  },
+  { timestamps: true }
+);
 
-export default Product; 
+export default mongoose.model<IProduct>("Product", productSchema); 

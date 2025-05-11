@@ -6,21 +6,42 @@ import {
   updateProduct,
   deleteProduct,
 } from "./productsController.js";
-import { validateCreateProduct, validateProductId } from "./productValidators.js";
-import { withValidationErrors } from "@/middlewares/validationMiddleware.js";
+import { validateCreateProduct, validateProductId, validateUpdateProduct, checkAdmin } from "./productValidators.js";
 import { authMiddleware } from "@/middlewares/authMiddleware.js";
+import { upload } from "@/utils/uploadUtils.js";
 
 const router = Router();
 
-router
-  .route("/")
-  .get(getProducts)
-  .post(authMiddleware, validateCreateProduct, withValidationErrors(validateCreateProduct), createProduct);
+// Public routes (but require authentication)
+router.get("/", authMiddleware, getProducts);
+router.get("/:id", authMiddleware, validateProductId, getProductById);
 
-router
-  .route("/:id")
-  .get(validateProductId, withValidationErrors(validateProductId), getProductById)
-  .patch(authMiddleware, validateProductId, withValidationErrors(validateProductId), updateProduct)
-  .delete(authMiddleware, validateProductId, withValidationErrors(validateProductId), deleteProduct);
+// Admin only routes
+router.post(
+  "/",
+  authMiddleware,
+  checkAdmin,
+  upload.single("image"),
+  validateCreateProduct,
+  createProduct
+);
+
+router.put(
+  "/:id",
+  authMiddleware,
+  checkAdmin,
+  upload.single("image"),
+  validateProductId,
+  validateUpdateProduct,
+  updateProduct
+);
+
+router.delete(
+  "/:id",
+  authMiddleware,
+  checkAdmin,
+  validateProductId,
+  deleteProduct
+);
 
 export default router; 

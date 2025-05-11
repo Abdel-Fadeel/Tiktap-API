@@ -26,17 +26,6 @@ export const validateCreateProfile = withValidationErrors([
       if (profile) throw new BadRequestError("Username already taken");
     }),
 
-  body("email")
-    .trim()
-    .notEmpty()
-    .withMessage("Email is required")
-    .isEmail()
-    .withMessage("Invalid email format")
-    .custom(async (email: string) => {
-      const profile = await Profile.findOne({ email });
-      if (profile) throw new BadRequestError("Email already registered");
-    }),
-
   body("phoneNumber")
     .trim()
     .notEmpty()
@@ -49,22 +38,6 @@ export const validateCreateProfile = withValidationErrors([
     .trim()
     .isLength({ max: 50 })
     .withMessage("Title cannot exceed 50 characters"),
-
-  body("links")
-    .optional()
-    .isArray()
-    .withMessage("Links must be an array")
-    .custom((value: any[]) => {
-      if (value && !value.every(link => 
-        typeof link === 'object' && 
-        typeof link.type === 'string' && 
-        typeof link.url === 'string' &&
-        typeof link.isEnabled === 'boolean'
-      )) {
-        throw new BadRequestError("Invalid link format");
-      }
-      return true;
-    }),
 ]);
 
 export const validateUpdateProfile = withValidationErrors([

@@ -1,38 +1,24 @@
 import { body, param } from "express-validator";
 import { withValidationErrors } from "@/middlewares/validationMiddleware.js";
 import { BadRequestError } from "@/errors/customErrors.js";
+import Product from "../products/productModel.js";
+import User from "../users/userModel.js";
 import mongoose from "mongoose";
 
 export const validateCreatePayment = withValidationErrors([
   body("productId")
     .notEmpty()
     .withMessage("Product ID is required")
-    .custom((value: string) => {
+    .custom(async (value: string) => {
       if (!mongoose.Types.ObjectId.isValid(value)) {
         throw new BadRequestError("Invalid Product ID");
       }
+      const product = await Product.findById(value);
+      if (!product) {
+        throw new BadRequestError("Product not found");
+      }
       return true;
     }),
-
-  body("amount")
-    .notEmpty()
-    .withMessage("Amount is required")
-    .isFloat({ min: 0 })
-    .withMessage("Amount must be a positive number"),
-
-  body("currency")
-    .trim()
-    .notEmpty()
-    .withMessage("Currency is required")
-    .isIn(["SAR", "USD", "EUR"])
-    .withMessage("Currency must be one of: SAR, USD, EUR"),
-
-  body("description")
-    .trim()
-    .notEmpty()
-    .withMessage("Description is required")
-    .isLength({ min: 10, max: 500 })
-    .withMessage("Description must be between 10 and 500 characters"),
 ]);
 
 export const validateUpdatePayment = withValidationErrors([

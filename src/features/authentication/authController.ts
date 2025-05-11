@@ -16,7 +16,7 @@ const transporter = nodemailer.createTransport({
 });
 
 export const register = async (req: IRequest, res: IResponse) => {
-  const { email, password, name, phoneNumber } = req.body;
+  const { email, password } = req.body;
 
   // Check if user already exists
   const existingUser = await User.findOne({ email });
@@ -26,9 +26,8 @@ export const register = async (req: IRequest, res: IResponse) => {
 
   const user = await User.create({ 
     email, 
-    password, 
-    name, 
-    phoneNumber,
+    password,
+    signupType: 'email/password',
     lastLogin: new Date() 
   });
   
@@ -39,7 +38,6 @@ export const register = async (req: IRequest, res: IResponse) => {
       user: {
         id: user._id,
         email: user.email,
-        name: user.name,
       }
     }
   });
@@ -58,22 +56,33 @@ export const login = async (req: IRequest, res: IResponse) => {
   user.lastLogin = new Date();
   await user.save();
 
-  const token = generateToken(user._id.toString(), user.email);
+  const token = generateToken(user._id.toString(), user.email, user.isAdmin);
+
+  // Populate products array with full product details
+  await user.populate({
+    path: 'products.productId',
+    select: 'name price description image'
+  });
+
+  // Transform the products array to rename productId to product
+  const transformedProducts = user.products.map(item => ({
+    product: item.productId,
+    amount: item.amount
+  }));
 
   res.status(StatusCodes.OK).json({
     status: true,
     message: "Logged in successfully",
     data: {
-      token,
       user: {
         id: user._id,
-        email: user.email,
         name: user.name,
-        signupType: user.signupType,
+        email: user.email,
+        isAdmin: user.isAdmin,
         profiles: user.profiles,
-        products: user.products,
-        isEmailVerified: user.isEmailVerified,
+        products: transformedProducts,
       },
+      token,
     },
   });
 };
@@ -105,7 +114,7 @@ export const googleLogin = async (req: IRequest, res: IResponse) => {
     await user.save();
   }
 
-  const token = generateToken(user._id.toString(), user.email);
+  const token = generateToken(user._id.toString(), user.email, user.isAdmin);
 
   res.status(StatusCodes.OK).json({
     status: true,
@@ -118,6 +127,7 @@ export const googleLogin = async (req: IRequest, res: IResponse) => {
         name: user.name,
         signupType: user.signupType,
         isEmailVerified: user.isEmailVerified,
+        isAdmin: user.isAdmin,
       },
     },
   });

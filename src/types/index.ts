@@ -20,6 +20,9 @@ export interface IUser extends Document {
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
+  isAdmin?: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface IProduct extends Document {
@@ -91,10 +94,7 @@ export interface IContact extends Document {
 }
 
 export interface IRequest extends Request {
-  user?: {
-    id: string;
-    email: string;
-  };
+  user?: IUser;
   file?: Express.Multer.File;
 }
 

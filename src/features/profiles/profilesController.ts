@@ -39,6 +39,11 @@ export const createProfile = async (req: IRequest, res: IResponse) => {
     userId,
   });
 
+  // Add profile to user's profiles array
+  await User.findByIdAndUpdate(userId, {
+    $push: { profiles: profile._id }
+  });
+
   res
     .status(StatusCodes.CREATED)
     .json({ status: true, message: "Profile created successfully", data: profile });

@@ -50,9 +50,8 @@ export const getContactById = async (req: IRequest, res: IResponse) => {
 
 // Create a new contact
 export const createContact = async (req: IRequest, res: IResponse) => {
-  const { fullName, phoneNumber, email, title, note } = req.body;
+  const { fullName, phoneNumber, email, title, note, profileId } = req.body;
   const userId = req.user?.id;
-  const profileId = req.body.profileId;
 
   const profile = await Profile.findOne({ _id: profileId, userId });
   if (!profile) throw new BadRequestError("Profile not found!");
@@ -66,6 +65,11 @@ export const createContact = async (req: IRequest, res: IResponse) => {
     profileId,
     userId,
     photo: req.file ? `/uploads/${req.file.filename}` : undefined,
+  });
+
+  // Add contact to profile's contacts array
+  await Profile.findByIdAndUpdate(profileId, {
+    $push: { contacts: contact._id }
   });
 
   res.status(StatusCodes.CREATED).json({ status: true, data: contact });

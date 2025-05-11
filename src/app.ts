@@ -55,9 +55,10 @@ app.use(`${BASE_API_URL}/nfc`, nfcRouter);
 
 // NOT FOUND Handler
 app.use("*", (req: Request, res: Response, next: NextFunction) => {
-  console.log(req);
   res.status(404).json({ message: "Route not found." });
 });
+
+
 
 // Global Error Handler
 app.use(errorHandlerMiddleware);

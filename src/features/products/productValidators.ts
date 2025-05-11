@@ -1,73 +1,48 @@
 import { body, param } from "express-validator";
 import { withValidationErrors } from "@/middlewares/validationMiddleware.js";
-import Product from "./productModel.js";
-import { BadRequestError } from "@/errors/customErrors.js";
+import { BadRequestError, UnauthorizedError } from "@/errors/customErrors.js";
 import mongoose from "mongoose";
+import { Request, Response, NextFunction } from "express";
+import { IRequest } from "@/types/index.js";
+
+// Admin check middleware
+export const checkAdmin = (req: Request, res: Response, next: NextFunction) => {
+  if (!(req as IRequest).user?.isAdmin) {
+    throw new UnauthorizedError("Only admins can perform this action");
+  }
+  next();
+};
+
+// Product validators
+const validateName = body("name")
+  .trim()
+  .notEmpty()
+  .withMessage("Name is required")
+  .isLength({ min: 2, max: 50 })
+  .withMessage("Name must be between 2 and 50 characters");
+
+const validatePrice = body("price")
+  .notEmpty()
+  .withMessage("Price is required")
+  .isFloat({ min: 0 })
+  .withMessage("Price must be a positive number");
+
+const validateDescription = body("description")
+  .optional()
+  .trim()
+  .isLength({ max: 1000 })
+  .withMessage("Description cannot exceed 1000 characters");
 
 export const validateCreateProduct = withValidationErrors([
-  body("name")
-    .trim()
-    .notEmpty()
-    .withMessage("Name is required")
-    .isLength({ min: 2, max: 50 })
-    .withMessage("Name must be between 2 and 50 characters"),
-
-  body("description")
-    .trim()
-    .notEmpty()
-    .withMessage("Description is required")
-    .isLength({ min: 10, max: 1000 })
-    .withMessage("Description must be between 10 and 1000 characters"),
-
-  body("price")
-    .notEmpty()
-    .withMessage("Price is required")
-    .isFloat({ min: 0 })
-    .withMessage("Price must be a positive number"),
-
-  body("category")
-    .trim()
-    .notEmpty()
-    .withMessage("Category is required")
-    .isLength({ min: 2, max: 50 })
-    .withMessage("Category must be between 2 and 50 characters"),
-
-  body("image")
-    .optional()
-    .trim()
-    .isURL()
-    .withMessage("Image must be a valid URL"),
+  validateName,
+  validatePrice,
+  validateDescription
 ]);
 
 export const validateUpdateProduct = withValidationErrors([
-  body("name")
-    .optional()
-    .trim()
-    .isLength({ min: 2, max: 50 })
-    .withMessage("Name must be between 2 and 50 characters"),
-
-  body("description")
-    .optional()
-    .trim()
-    .isLength({ min: 10, max: 1000 })
-    .withMessage("Description must be between 10 and 1000 characters"),
-
-  body("price")
-    .optional()
-    .isFloat({ min: 0 })
-    .withMessage("Price must be a positive number"),
-
-  body("category")
-    .optional()
-    .trim()
-    .isLength({ min: 2, max: 50 })
-    .withMessage("Category must be between 2 and 50 characters"),
-
-  body("image")
-    .optional()
-    .trim()
-    .isURL()
-    .withMessage("Image must be a valid URL"),
+  validateName.optional(),
+  validatePrice.optional(),
+  validateDescription
 ]);
 
 export const validateProductId = withValidationErrors([

@@ -5,63 +5,76 @@ import { IUser } from '@/types/index.js';
 const UserSchema = new mongoose.Schema({
   email: {
     type: String,
-    required: [true, "Please provide email"],
+    required: [true, 'Email is required'],
     unique: true,
-    lowercase: true,
     trim: true,
+    lowercase: true,
+    match: [
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+      'Please provide a valid email',
+    ],
   },
   password: {
     type: String,
-    required: [true, "Please provide password"],
-    minlength: 8,
-    select: false,
+    required: [true, 'Password is required'],
+    minlength: [6, 'Password must be at least 6 characters'],
   },
-  name: {
-    type: String,
-    trim: true,
-  },
-  googleId: {
-    type: String,
-    sparse: true,
-  },
-  signupType: {
-    type: String,
-    enum: ["email/password", "google"],
-    default: "email/password",
-  },
-  phoneNumber: {
-    type: String,
-    trim: true,
+  isAdmin: {
+    type: Boolean,
+    default: false,
   },
   isEmailVerified: {
     type: Boolean,
     default: false,
   },
-  lastLogin: {
-    type: Date,
-    default: Date.now,
+  signupType: {
+    type: String,
+    enum: ['email/password', 'google'],
+    default: 'email/password',
   },
+  profiles: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Profile'
+  }],
+  products: [{
+    productId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Product'
+    },
+    amount: Number
+  }],
   resetPasswordToken: String,
   resetPasswordExpires: Date,
 }, {
   timestamps: true,
 });
 
-// Use a pre-save hook to hash the user's password before saving it to the database
-UserSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-
-  if (this.password) {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-  }
+// Hash password before saving
+UserSchema.pre('save', async function() {
+  if (!this.isModified('password')) return;
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
 });
 
-// Define a method to compare a candidate password with the stored hashed password
-UserSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
+// Compare password method
+UserSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-const User = mongoose.model<IUser>("User", UserSchema);
+// Static method for signup
+UserSchema.statics.signup = async function(email: string, password: string) {
+  const exists = await this.findOne({ email });
+  if (exists) {
+    throw new Error('Email already in use');
+  }
 
-export default User; 
+  const user = await this.create({
+    email,
+    password,
+    signupType: 'email/password',
+  });
+
+  return user;
+};
+
+export default mongoose.model<IUser>('User', UserSchema); 

@@ -20,23 +20,7 @@ export const validateRegister = withValidationErrors([
     .notEmpty()
     .withMessage("Password is required")
     .isLength({ min: 6 })
-    .withMessage("Password must be at least 6 characters long")
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/)
-    .withMessage("Password must contain at least one uppercase letter, one lowercase letter, one number and one special character"),
-
-  body("name")
-    .trim()
-    .notEmpty()
-    .withMessage("Name is required")
-    .isLength({ min: 2, max: 50 })
-    .withMessage("Name must be between 2 and 50 characters"),
-
-  body("phoneNumber")
-    .trim()
-    .notEmpty()
-    .withMessage("Phone number is required")
-    .matches(/^(\+966|0)?5\d{8}$/)
-    .withMessage("Phone number must be a valid Saudi number"),
+    .withMessage("Password must be at least 6 characters long"),
 ]);
 
 export const validateLogin = withValidationErrors([
@@ -65,13 +49,6 @@ export const validateGoogleLogin = withValidationErrors([
     .withMessage("Email is required")
     .isEmail()
     .withMessage("Invalid email format"),
-
-  body("name")
-    .trim()
-    .notEmpty()
-    .withMessage("Name is required")
-    .isLength({ min: 2, max: 50 })
-    .withMessage("Name must be between 2 and 50 characters"),
 ]);
 
 export const validateResetPassword = withValidationErrors([
@@ -92,9 +69,7 @@ export const validateResetPassword = withValidationErrors([
     .notEmpty()
     .withMessage("New password is required")
     .isLength({ min: 6 })
-    .withMessage("Password must be at least 6 characters long")
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/)
-    .withMessage("Password must contain at least one uppercase letter, one lowercase letter, one number and one special character"),
+    .withMessage("Password must be at least 6 characters long"),
 ]);
 
 export const validateForgotPassword = withValidationErrors([

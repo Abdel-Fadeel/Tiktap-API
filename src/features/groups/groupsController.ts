@@ -63,6 +63,11 @@ export const createGroup = async (req: IRequest, res: IResponse) => {
     photo: req.file ? `/uploads/${req.file.filename}` : undefined,
   });
 
+  // Add group to profile's groups array
+  await Profile.findByIdAndUpdate(profileId, {
+    $push: { groups: group._id }
+  });
+
   res.status(StatusCodes.CREATED).json({ status: true, data: group });
 };
 
