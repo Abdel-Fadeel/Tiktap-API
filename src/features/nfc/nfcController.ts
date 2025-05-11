@@ -7,6 +7,10 @@ import NFC from "./nfcModel.js";
 export const registerCard = async (req: IRequest, res: IResponse) => {
   const { cardId } = req.body;
 
+  if (!cardId) {
+    throw new BadRequestError("Card ID is required");
+  }
+
   // Check if card ID already exists
   const existingCard = await NFC.findOne({ cardId });
   if (existingCard) {
@@ -23,5 +27,15 @@ export const registerCard = async (req: IRequest, res: IResponse) => {
     status: true,
     message: "Card registered successfully",
     data: nfc,
+  });
+};
+
+// Get all NFC cards
+export const getAllCards = async (req: IRequest, res: IResponse) => {
+  const cards = await NFC.find().sort({ createdAt: -1 });
+  
+  res.status(StatusCodes.OK).json({
+    status: true,
+    data: cards,
   });
 }; 
